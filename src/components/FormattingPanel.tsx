@@ -7,6 +7,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { FormattingOptions } from '@/types';
+import { LogoUploader } from '@/components/LogoUploader';
+import { ColorThemeSelector } from '@/components/ColorThemeSelector';
 
 interface FormattingPanelProps {
   opisFormatting: FormattingOptions;
@@ -325,6 +327,18 @@ export const FormattingPanel: React.FC<FormattingPanelProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      <LogoUploader
+        formatting={coverFormatting}
+        onFormattingChange={updateCoverFormatting}
+        title="Logo pentru copertă"
+      />
+
+      <ColorThemeSelector
+        formatting={coverFormatting}
+        onFormattingChange={updateCoverFormatting}
+        title="Temă de culori pentru copertă"
+      />
 
       <Separator />
 

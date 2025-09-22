@@ -23,6 +23,29 @@ export interface PDFExportConfig {
 export const generateCoverPageHTML = (config: CoverPageConfig): string => {
   const { annexNumber, title, formatting } = config;
   const headingText = formatting.headingFormat?.replace('{n}', annexNumber.toString()) || `ANEXA ${annexNumber}`;
+  const theme = formatting.colorTheme;
+  const logoUrl = formatting.logoFile ? URL.createObjectURL(formatting.logoFile) : '';
+  
+  const logoStyles = formatting.logoFile ? `
+    .logo {
+      width: ${formatting.logoSize || 120}px;
+      height: auto;
+      max-height: ${formatting.logoSize || 120}px;
+      object-fit: contain;
+      margin: ${formatting.logoPosition === 'top' ? '0 0 40px 0' : formatting.logoPosition === 'bottom' ? '40px 0 0 0' : '0 20px'};
+    }
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: ${formatting.logoPosition === 'top' || formatting.logoPosition === 'bottom' ? 'column' : 'row'};
+      ${formatting.logoPosition === 'left' ? 'flex-direction: row;' : ''}
+      ${formatting.logoPosition === 'right' ? 'flex-direction: row-reverse;' : ''}
+    }
+    .content-wrapper {
+      ${formatting.logoPosition === 'left' || formatting.logoPosition === 'right' ? 'text-align: center; flex: 1;' : ''}
+    }
+  ` : '';
   
   return `
     <!DOCTYPE html>
@@ -44,21 +67,24 @@ export const generateCoverPageHTML = (config: CoverPageConfig): string => {
           flex-direction: column;
           justify-content: center;
           align-items: center;
+          background-color: ${theme?.background || '#ffffff'};
+          color: ${theme?.text || '#1a1a1a'};
         }
         .heading {
           font-size: ${formatting.headingFontSize || 28}pt;
           font-weight: bold;
           margin-bottom: 40px;
-          color: #1a1a1a;
+          color: ${theme?.primary || '#1a1a1a'};
         }
         .title {
           font-size: ${formatting.fontSize}pt;
           font-weight: ${formatting.bold ? 'bold' : 'normal'};
-          color: #333;
+          color: ${theme?.secondary || '#333'};
           max-width: 80%;
           word-wrap: break-word;
           text-align: center;
         }
+        ${logoStyles}
         ${formatting.showPageNumbers ? `
         .page-number {
           position: fixed;
@@ -66,14 +92,26 @@ export const generateCoverPageHTML = (config: CoverPageConfig): string => {
           width: 100%;
           text-align: center;
           font-size: 10pt;
-          color: #666;
+          color: ${theme?.text || '#666'};
         }
         ` : ''}
       </style>
     </head>
     <body>
-      <div class="heading">${headingText}</div>
-      <div class="title">${title}</div>
+      <div class="${formatting.logoFile ? 'logo-container' : ''}">
+        ${formatting.logoFile && (formatting.logoPosition === 'top' || !formatting.logoPosition) ? 
+          `<img src="${logoUrl}" alt="Logo" class="logo" />` : ''}
+        ${formatting.logoFile && formatting.logoPosition === 'left' ? 
+          `<img src="${logoUrl}" alt="Logo" class="logo" />` : ''}
+        <div class="content-wrapper">
+          <div class="heading">${headingText}</div>
+          <div class="title">${title}</div>
+        </div>
+        ${formatting.logoFile && formatting.logoPosition === 'right' ? 
+          `<img src="${logoUrl}" alt="Logo" class="logo" />` : ''}
+        ${formatting.logoFile && formatting.logoPosition === 'bottom' ? 
+          `<img src="${logoUrl}" alt="Logo" class="logo" />` : ''}
+      </div>
       ${formatting.showPageNumbers ? '<div class="page-number">1</div>' : ''}
     </body>
     </html>
@@ -82,6 +120,7 @@ export const generateCoverPageHTML = (config: CoverPageConfig): string => {
 
 export const generateOpisHTML = (config: OpisTableConfig): string => {
   const { annexes, formatting } = config;
+  const theme = formatting.colorTheme;
   
   const tableRows = annexes.map(annex => `
     <tr>
@@ -106,14 +145,15 @@ export const generateOpisHTML = (config: OpisTableConfig): string => {
           font-weight: ${formatting.bold ? 'bold' : 'normal'};
           margin: 0;
           padding: 20px 0;
-          color: #1a1a1a;
+          background-color: ${theme?.background || '#ffffff'};
+          color: ${theme?.text || '#1a1a1a'};
         }
         .title {
           text-align: center;
           font-size: ${formatting.fontSize * 1.5}pt;
           font-weight: bold;
           margin-bottom: 30px;
-          color: #1a1a1a;
+          color: ${theme?.primary || '#1a1a1a'};
         }
         table {
           width: 100%;
@@ -121,14 +161,15 @@ export const generateOpisHTML = (config: OpisTableConfig): string => {
           margin-top: 20px;
         }
         th, td {
-          border: 1px solid #333;
+          border: 1px solid ${theme?.secondary || '#333'};
           padding: 8px 12px;
           text-align: ${formatting.alignment};
           vertical-align: top;
         }
         th {
-          background-color: #f5f5f5;
+          background-color: ${theme?.accent || '#f5f5f5'};
           font-weight: bold;
+          color: ${theme?.text || '#1a1a1a'};
         }
         .number-cell {
           width: 30%;
@@ -144,7 +185,7 @@ export const generateOpisHTML = (config: OpisTableConfig): string => {
           width: 100%;
           text-align: center;
           font-size: 10pt;
-          color: #666;
+          color: ${theme?.text || '#666'};
         }
         ` : ''}
       </style>
@@ -271,13 +312,102 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
   
   const { annexNumber, title, formatting } = config;
   const headingText = formatting.headingFormat?.replace('{n}', annexNumber.toString()) || `ANEXA ${annexNumber}`;
+  const theme = formatting.colorTheme;
   
   const pageHeight = 841.89;
   const pageWidth = 595.28;
   
+  // Parse theme colors or use defaults
+  const parseColor = (colorStr: string) => {
+    const hex = colorStr.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16) / 255;
+    const g = parseInt(hex.substr(2, 2), 16) / 255;
+    const b = parseInt(hex.substr(4, 2), 16) / 255;
+    return rgb(r, g, b);
+  };
+  
+  const primaryColor = theme?.primary ? parseColor(theme.primary) : rgb(0.1, 0.1, 0.1);
+  const secondaryColor = theme?.secondary ? parseColor(theme.secondary) : rgb(0.2, 0.2, 0.2);
+  const backgroundColor = theme?.background ? parseColor(theme.background) : rgb(1, 1, 1);
+  
+  // Set background color if not white
+  if (theme?.background && theme.background !== '#ffffff') {
+    page.drawRectangle({
+      x: 0,
+      y: 0,
+      width: pageWidth,
+      height: pageHeight,
+      color: backgroundColor,
+    });
+  }
+  
   // Calculate center positions
   const centerX = pageWidth / 2;
   const centerY = pageHeight / 2;
+  
+  let logoImage: any = null;
+  let logoHeight = 0;
+  const logoSize = formatting.logoSize || 120;
+  
+  // Embed logo if provided
+  if (formatting.logoFile) {
+    try {
+      const logoBytes = await readFileAsBytes(formatting.logoFile);
+      const fileType = formatting.logoFile.type;
+      
+      if (fileType.includes('png')) {
+        logoImage = await pdfDoc.embedPng(logoBytes);
+      } else if (fileType.includes('jpg') || fileType.includes('jpeg')) {
+        logoImage = await pdfDoc.embedJpg(logoBytes);
+      }
+      
+      if (logoImage) {
+        const logoAspectRatio = logoImage.width / logoImage.height;
+        const logoWidth = logoSize;
+        logoHeight = logoSize / logoAspectRatio;
+      }
+    } catch (error) {
+      console.warn('Could not embed logo:', error);
+    }
+  }
+  
+  // Calculate layout based on logo position
+  let contentStartY = centerY;
+  let logoX = centerX;
+  let logoY = centerY;
+  
+  if (logoImage) {
+    const logoPosition = formatting.logoPosition || 'top';
+    
+    switch (logoPosition) {
+      case 'top':
+        logoX = centerX - (logoSize / 2);
+        logoY = centerY + 80;
+        contentStartY = centerY - 20;
+        break;
+      case 'bottom':
+        logoX = centerX - (logoSize / 2);
+        logoY = centerY - 80 - logoHeight;
+        contentStartY = centerY + 20;
+        break;
+      case 'left':
+        logoX = centerX - 150;
+        logoY = centerY - (logoHeight / 2);
+        break;
+      case 'right':
+        logoX = centerX + 50;
+        logoY = centerY - (logoHeight / 2);
+        break;
+    }
+    
+    // Draw logo
+    page.drawImage(logoImage, {
+      x: logoX,
+      y: logoY,
+      width: logoSize,
+      height: logoHeight,
+    });
+  }
   
   // Draw heading
   const headingSize = formatting.headingFontSize || 28;
@@ -285,10 +415,10 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
   
   page.drawText(headingText, {
     x: centerX - (headingWidth / 2),
-    y: centerY + 50,
+    y: contentStartY + 50,
     size: headingSize,
     font: boldFont,
-    color: rgb(0.1, 0.1, 0.1),
+    color: primaryColor,
   });
   
   // Draw title
@@ -324,7 +454,7 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
   // Draw title lines
   const lineHeight = titleSize * 1.2;
   const totalTitleHeight = lines.length * lineHeight;
-  let startY = centerY - 30 - (totalTitleHeight / 2);
+  let startY = contentStartY - 30 - (totalTitleHeight / 2);
   
   for (const line of lines) {
     const lineWidth = titleFont.widthOfTextAtSize(line, titleSize);
@@ -333,12 +463,27 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
       y: startY,
       size: titleSize,
       font: titleFont,
-      color: rgb(0.2, 0.2, 0.2),
+      color: secondaryColor,
     });
     startY -= lineHeight;
   }
   
   return await pdfDoc.save();
+};
+
+const readFileAsBytes = (file: File): Promise<Uint8Array> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result instanceof ArrayBuffer) {
+        resolve(new Uint8Array(reader.result));
+      } else {
+        reject(new Error('Failed to read file as ArrayBuffer'));
+      }
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsArrayBuffer(file);
+  });
 };
 
 const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
@@ -348,10 +493,37 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   
   const { annexes, formatting } = config;
+  const theme = formatting.colorTheme;
+  
+  // Parse theme colors or use defaults
+  const parseColor = (colorStr: string) => {
+    const hex = colorStr.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16) / 255;
+    const g = parseInt(hex.substr(2, 2), 16) / 255;
+    const b = parseInt(hex.substr(4, 2), 16) / 255;
+    return rgb(r, g, b);
+  };
+  
+  const primaryColor = theme?.primary ? parseColor(theme.primary) : rgb(0.1, 0.1, 0.1);
+  const secondaryColor = theme?.secondary ? parseColor(theme.secondary) : rgb(0.2, 0.2, 0.2);
+  const accentColor = theme?.accent ? parseColor(theme.accent) : rgb(0.95, 0.95, 0.95);
+  const textColor = theme?.text ? parseColor(theme.text) : rgb(0.1, 0.1, 0.1);
+  const backgroundColor = theme?.background ? parseColor(theme.background) : rgb(1, 1, 1);
   
   const pageHeight = 841.89;
   const pageWidth = 595.28;
   const margin = 50;
+  
+  // Set background color if not white
+  if (theme?.background && theme.background !== '#ffffff') {
+    page.drawRectangle({
+      x: 0,
+      y: 0,
+      width: pageWidth,
+      height: pageHeight,
+      color: backgroundColor,
+    });
+  }
   
   // Title
   const titleText = 'OPIS';
@@ -363,7 +535,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
     y: pageHeight - margin - 50,
     size: titleSize,
     font: boldFont,
-    color: rgb(0.1, 0.1, 0.1),
+    color: primaryColor,
   });
   
   // Table
@@ -383,7 +555,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
     y: headerY - rowHeight,
     width: tableWidth,
     height: rowHeight,
-    color: rgb(0.95, 0.95, 0.95),
+    color: accentColor,
   });
   
   // Header borders
@@ -392,7 +564,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
     y: headerY - rowHeight,
     width: col1Width,
     height: rowHeight,
-    borderColor: rgb(0.2, 0.2, 0.2),
+    borderColor: secondaryColor,
     borderWidth: 1,
   });
   
@@ -401,7 +573,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
     y: headerY - rowHeight,
     width: col2Width,
     height: rowHeight,
-    borderColor: rgb(0.2, 0.2, 0.2),
+    borderColor: secondaryColor,
     borderWidth: 1,
   });
   
@@ -411,7 +583,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
     y: headerY - rowHeight + 8,
     size: formatting.fontSize || 12,
     font: boldFont,
-    color: rgb(0.1, 0.1, 0.1),
+    color: textColor,
   });
   
   page.drawText('Descriere', {
@@ -419,7 +591,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
     y: headerY - rowHeight + 8,
     size: formatting.fontSize || 12,
     font: boldFont,
-    color: rgb(0.1, 0.1, 0.1),
+    color: textColor,
   });
   
   // Table rows
@@ -434,7 +606,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
       y: currentY,
       width: col1Width,
       height: rowHeight,
-      borderColor: rgb(0.2, 0.2, 0.2),
+      borderColor: secondaryColor,
       borderWidth: 1,
     });
     
@@ -443,7 +615,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
       y: currentY,
       width: col2Width,
       height: rowHeight,
-      borderColor: rgb(0.2, 0.2, 0.2),
+      borderColor: secondaryColor,
       borderWidth: 1,
     });
     
@@ -454,7 +626,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
       y: currentY + 8,
       size: formatting.fontSize || 12,
       font: font,
-      color: rgb(0.1, 0.1, 0.1),
+      color: textColor,
     });
     
     // Truncate long titles
@@ -471,7 +643,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
       y: currentY + 8,
       size: titleSize,
       font: font,
-      color: rgb(0.1, 0.1, 0.1),
+      color: textColor,
     });
   }
   

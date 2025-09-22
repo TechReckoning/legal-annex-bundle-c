@@ -12,6 +12,15 @@ export interface AnnexItem {
   documents: DocumentItem[];
 }
 
+export interface ColorTheme {
+  name: string;
+  primary: string;
+  secondary: string;
+  accent: string;
+  text: string;
+  background: string;
+}
+
 export interface FormattingOptions {
   fontFamily: string;
   fontSize: number;
@@ -25,6 +34,11 @@ export interface FormattingOptions {
   headingFormat?: string;
   headingFontSize?: number;
   logoPath?: string;
+  logoFile?: File;
+  logoSize?: number;
+  logoPosition?: 'top' | 'bottom' | 'left' | 'right';
+  colorTheme?: ColorTheme;
+  useCustomColors?: boolean;
 }
 
 export interface ProjectModel {
@@ -33,6 +47,49 @@ export interface ProjectModel {
   coverFormatting: FormattingOptions;
   projectVersion: string;
 }
+
+export const colorThemes: ColorTheme[] = [
+  {
+    name: 'Professional Blue',
+    primary: '#1e40af',
+    secondary: '#3b82f6',
+    accent: '#60a5fa',
+    text: '#1f2937',
+    background: '#ffffff'
+  },
+  {
+    name: 'Classic Black',
+    primary: '#000000',
+    secondary: '#374151',
+    accent: '#6b7280',
+    text: '#111827',
+    background: '#ffffff'
+  },
+  {
+    name: 'Legal Green',
+    primary: '#059669',
+    secondary: '#10b981',
+    accent: '#34d399',
+    text: '#1f2937',
+    background: '#ffffff'
+  },
+  {
+    name: 'Corporate Purple',
+    primary: '#7c3aed',
+    secondary: '#8b5cf6',
+    accent: '#a78bfa',
+    text: '#1f2937',
+    background: '#ffffff'
+  },
+  {
+    name: 'Elegant Navy',
+    primary: '#1e3a8a',
+    secondary: '#3730a3',
+    accent: '#6366f1',
+    text: '#1f2937',
+    background: '#ffffff'
+  }
+];
 
 export const defaultFormattingOptions: FormattingOptions = {
   fontFamily: 'Inter',
@@ -44,6 +101,10 @@ export const defaultFormattingOptions: FormattingOptions = {
   marginBottom: 20,
   marginLeft: 20,
   showPageNumbers: true,
+  logoSize: 80,
+  logoPosition: 'top',
+  colorTheme: colorThemes[0],
+  useCustomColors: false,
 };
 
 export const defaultCoverFormattingOptions: FormattingOptions = {
@@ -52,4 +113,8 @@ export const defaultCoverFormattingOptions: FormattingOptions = {
   headingFormat: 'ANEXA {n}',
   headingFontSize: 28,
   fontSize: 16,
+  logoSize: 120,
+  logoPosition: 'top',
+  colorTheme: colorThemes[0],
+  useCustomColors: false,
 };

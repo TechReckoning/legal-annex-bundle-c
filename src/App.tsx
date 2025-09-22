@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { Download, FloppyDisk, ArrowUp, ArrowDown, Trash, FolderPlus } from '@phosphor-icons/react';
 
-import { AnnexItem, ProjectModel, FormattingOptions, defaultFormattingOptions, defaultCoverFormattingOptions } from '@/types';
+import { AnnexItem, ProjectModel, FormattingOptions, defaultFormattingOptions, defaultCoverFormattingOptions, colorThemes } from '@/types';
 import { 
   generateId, 
   generateAutoTitle, 
@@ -210,8 +210,14 @@ function App() {
   };
 
   const handleResetFormatting = () => {
-    setOpisFormatting(defaultFormattingOptions);
-    setCoverFormatting(defaultCoverFormattingOptions);
+    setOpisFormatting({
+      ...defaultFormattingOptions,
+      colorTheme: colorThemes[0]
+    });
+    setCoverFormatting({
+      ...defaultCoverFormattingOptions,
+      colorTheme: colorThemes[0]
+    });
     toast.success('Formatarea resetată la valorile implicite');
   };
 
