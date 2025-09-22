@@ -42,19 +42,57 @@ function App() {
   const [coverFormatting, setCoverFormatting] = useKV<FormattingOptions>('coverFormatting', defaultCoverFormattingOptions);
   const [selectedAnnexId, setSelectedAnnexId] = React.useState<string | null>(null);
 
-  const selectedAnnex = (annexes || []).find(annex => annex.id === selectedAnnexId) || null;
+  // Ensure annexes is always an array and handle potential storage issues
+  const safeAnnexes = React.useMemo(() => {
+    try {
+      return Array.isArray(annexes) ? annexes : [];
+    } catch (error) {
+      console.warn('Error accessing annexes:', error);
+      return [];
+    }
+  }, [annexes]);
+
+  // Ensure formatting options are valid
+  const safeOpisFormatting = React.useMemo(() => {
+    try {
+      return opisFormatting && typeof opisFormatting === 'object' ? opisFormatting : defaultFormattingOptions;
+    } catch (error) {
+      console.warn('Error accessing opis formatting:', error);
+      return defaultFormattingOptions;
+    }
+  }, [opisFormatting]);
+
+  const safeCoverFormatting = React.useMemo(() => {
+    try {
+      return coverFormatting && typeof coverFormatting === 'object' ? coverFormatting : defaultCoverFormattingOptions;
+    } catch (error) {
+      console.warn('Error accessing cover formatting:', error);
+      return defaultCoverFormattingOptions;
+    }
+  }, [coverFormatting]);
+
+  const selectedAnnex = React.useMemo(() => {
+    if (!safeAnnexes || !selectedAnnexId) return null;
+    return safeAnnexes.find(annex => annex.id === selectedAnnexId) || null;
+  }, [safeAnnexes, selectedAnnexId]);
 
   const handleFilesSelected = (files: File[]) => {
-    const newAnnexes = files.map(createAnnexFromFile);
-    setAnnexes(currentAnnexes => {
-      const combined = [...(currentAnnexes || []), ...newAnnexes];
-      return updateAnnexNumbers(combined);
-    });
-    
-    toast.success(`${files.length} fișier${files.length !== 1 ? 'e' : ''} adăugat${files.length !== 1 ? 'e' : ''}`);
-    
-    if (files.length > 0 && !selectedAnnexId) {
-      setSelectedAnnexId(newAnnexes[0].id);
+    try {
+      const newAnnexes = files.map(createAnnexFromFile);
+      setAnnexes(currentAnnexes => {
+        const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
+        const combined = [...current, ...newAnnexes];
+        return updateAnnexNumbers(combined);
+      });
+      
+      toast.success(`${files.length} fișier${files.length !== 1 ? 'e' : ''} adăugat${files.length !== 1 ? 'e' : ''}`);
+      
+      if (files.length > 0 && !selectedAnnexId) {
+        setSelectedAnnexId(newAnnexes[0].id);
+      }
+    } catch (error) {
+      console.error('Error adding files:', error);
+      toast.error('Eroare la adăugarea fișierelor');
     }
   };
 
@@ -80,70 +118,97 @@ function App() {
   };
 
   const handleSaveProject = () => {
-    const project: ProjectModel = {
-      annexes: annexes || [],
-      opisFormatting: opisFormatting || defaultFormattingOptions,
-      coverFormatting: coverFormatting || defaultCoverFormattingOptions,
-      projectVersion: '1.0',
-    };
-    
-    saveProject(project);
-    toast.success('Proiect salvat');
+    try {
+      const project: ProjectModel = {
+        annexes: safeAnnexes,
+        opisFormatting: safeOpisFormatting,
+        coverFormatting: safeCoverFormatting,
+        projectVersion: '1.0',
+      };
+      
+      saveProject(project);
+      toast.success('Proiect salvat');
+    } catch (error) {
+      console.error('Error saving project:', error);
+      toast.error('Eroare la salvarea proiectului');
+    }
   };
 
   const handleRemoveAnnex = (id: string) => {
-    setAnnexes(currentAnnexes => {
-      const filtered = (currentAnnexes || []).filter(annex => annex.id !== id);
-      return updateAnnexNumbers(filtered);
-    });
-    
-    if (selectedAnnexId === id) {
-      setSelectedAnnexId(null);
+    try {
+      setAnnexes(currentAnnexes => {
+        const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
+        const filtered = current.filter(annex => annex.id !== id);
+        return updateAnnexNumbers(filtered);
+      });
+      
+      if (selectedAnnexId === id) {
+        setSelectedAnnexId(null);
+      }
+      
+      toast.success('Anexa eliminată');
+    } catch (error) {
+      console.error('Error removing annex:', error);
+      toast.error('Eroare la eliminarea anexei');
     }
-    
-    toast.success('Anexa eliminată');
   };
 
   const handleUpdateTitle = (id: string, title: string) => {
-    setAnnexes(currentAnnexes => 
-      (currentAnnexes || []).map(annex => 
-        annex.id === id 
-          ? { ...annex, userTitle: title.trim() || undefined }
-          : annex
-      )
-    );
+    try {
+      setAnnexes(currentAnnexes => {
+        const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
+        return current.map(annex => 
+          annex.id === id 
+            ? { ...annex, userTitle: title.trim() || undefined }
+            : annex
+        );
+      });
+    } catch (error) {
+      console.error('Error updating title:', error);
+      toast.error('Eroare la actualizarea titlului');
+    }
   };
 
   const handleMoveUp = (id: string) => {
-    setAnnexes(currentAnnexes => {
-      const current = currentAnnexes || [];
-      const index = current.findIndex(annex => annex.id === id);
-      if (index > 0) {
-        return reorderAnnexes(current, index, index - 1);
-      }
-      return current;
-    });
+    try {
+      setAnnexes(currentAnnexes => {
+        const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
+        const index = current.findIndex(annex => annex.id === id);
+        if (index > 0) {
+          return reorderAnnexes(current, index, index - 1);
+        }
+        return current;
+      });
+    } catch (error) {
+      console.error('Error moving annex up:', error);
+      toast.error('Eroare la reordonarea anexei');
+    }
   };
 
   const handleMoveDown = (id: string) => {
-    setAnnexes(currentAnnexes => {
-      const current = currentAnnexes || [];
-      const index = current.findIndex(annex => annex.id === id);
-      if (index < current.length - 1) {
-        return reorderAnnexes(current, index, index + 1);
-      }
-      return current;
-    });
+    try {
+      setAnnexes(currentAnnexes => {
+        const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
+        const index = current.findIndex(annex => annex.id === id);
+        if (index < current.length - 1) {
+          return reorderAnnexes(current, index, index + 1);
+        }
+        return current;
+      });
+    } catch (error) {
+      console.error('Error moving annex down:', error);
+      toast.error('Eroare la reordonarea anexei');
+    }
   };
 
   const handleExportPDF = async () => {
-    if (!annexes || annexes.length === 0) {
+    if (!safeAnnexes || safeAnnexes.length === 0) {
       toast.error('Nu există anexe pentru export');
       return;
     }
 
     // Check if any annex has documents
-    const annexesWithDocuments = annexes.filter(annex => annex.documents && annex.documents.length > 0);
+    const annexesWithDocuments = safeAnnexes.filter(annex => annex.documents && annex.documents.length > 0);
     if (annexesWithDocuments.length === 0) {
       toast.error('Nu există documente în anexe pentru export');
       return;
@@ -157,8 +222,8 @@ function App() {
       
       await exportToPDF({
         annexes: annexesWithDocuments, // Only export annexes with documents
-        opisFormatting: opisFormatting || defaultFormattingOptions,
-        coverFormatting: coverFormatting || defaultCoverFormattingOptions,
+        opisFormatting: safeOpisFormatting,
+        coverFormatting: safeCoverFormatting,
       });
       
       toast.success(`PDF exportat cu succes! (${annexesWithDocuments.length} anexe, ${totalDocuments} documente)`);
@@ -170,64 +235,86 @@ function App() {
   };
 
   const handleAddDocument = (annexId: string, file: File) => {
-    setAnnexes(currentAnnexes => 
-      (currentAnnexes || []).map(annex => 
-        annex.id === annexId 
-          ? addDocumentToAnnex(annex, file)
-          : annex
-      )
-    );
-    
-    toast.success('Document adăugat în anexă');
+    try {
+      setAnnexes(currentAnnexes => {
+        const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
+        return current.map(annex => 
+          annex.id === annexId 
+            ? addDocumentToAnnex(annex, file)
+            : annex
+        );
+      });
+      
+      toast.success('Document adăugat în anexă');
+    } catch (error) {
+      console.error('Error adding document:', error);
+      toast.error('Eroare la adăugarea documentului');
+    }
   };
 
   const handleRemoveDocument = (annexId: string, documentId: string) => {
-    setAnnexes(currentAnnexes => 
-      (currentAnnexes || []).map(annex => 
-        annex.id === annexId 
-          ? removeDocumentFromAnnex(annex, documentId)
-          : annex
-      ).filter(annex => annex.documents && annex.documents.length > 0) // Remove empty annexes
-    );
-    
-    // If the current annex becomes empty, clear selection
-    const updatedAnnex = (annexes || []).find(a => a.id === annexId);
-    if (updatedAnnex && updatedAnnex.documents && updatedAnnex.documents.length === 1) { // Will become 0 after removal
-      setSelectedAnnexId(null);
+    try {
+      setAnnexes(currentAnnexes => {
+        const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
+        return current.map(annex => 
+          annex.id === annexId 
+            ? removeDocumentFromAnnex(annex, documentId)
+            : annex
+        ).filter(annex => annex.documents && annex.documents.length > 0); // Remove empty annexes
+      });
+      
+      // If the current annex becomes empty, clear selection
+      const updatedAnnex = safeAnnexes.find(a => a.id === annexId);
+      if (updatedAnnex && updatedAnnex.documents && updatedAnnex.documents.length === 1) { // Will become 0 after removal
+        setSelectedAnnexId(null);
+      }
+      
+      toast.success('Document eliminat din anexă');
+    } catch (error) {
+      console.error('Error removing document:', error);
+      toast.error('Eroare la eliminarea documentului');
     }
-    
-    toast.success('Document eliminat din anexă');
   };
 
   const handleCreateNewAnnex = () => {
-    const newAnnex: AnnexItem = {
-      id: generateId(),
-      annexNumber: 0,
-      documents: [],
-    };
-    
-    setAnnexes(currentAnnexes => {
-      const combined = [...(currentAnnexes || []), newAnnex];
-      return updateAnnexNumbers(combined);
-    });
-    
-    setSelectedAnnexId(newAnnex.id);
-    toast.success('Anexă nouă creată');
+    try {
+      const newAnnex: AnnexItem = {
+        id: generateId(),
+        annexNumber: 0,
+        documents: [],
+      };
+      
+      setAnnexes(currentAnnexes => {
+        const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
+        const combined = [...current, newAnnex];
+        return updateAnnexNumbers(combined);
+      });
+      
+      setSelectedAnnexId(newAnnex.id);
+      toast.success('Anexă nouă creată');
+    } catch (error) {
+      console.error('Error creating new annex:', error);
+      toast.error('Eroare la crearea anexei');
+    }
   };
 
   const handleResetFormatting = () => {
-    setOpisFormatting({
-      ...defaultFormattingOptions,
-      colorTheme: colorThemes[0]
-    });
-    setCoverFormatting({
-      ...defaultCoverFormattingOptions,
-      colorTheme: colorThemes[0]
-    });
-    toast.success('Formatarea resetată la valorile implicite');
+    try {
+      setOpisFormatting({
+        ...defaultFormattingOptions,
+        colorTheme: colorThemes[0]
+      });
+      setCoverFormatting({
+        ...defaultCoverFormattingOptions,
+        colorTheme: colorThemes[0]
+      });
+      toast.success('Formatarea resetată la valorile implicite');
+    } catch (error) {
+      console.error('Error resetting formatting:', error);
+      toast.error('Eroare la resetarea formatării');
+    }
   };
 
-  const safeAnnexes = annexes || [];
   const annexesWithDocuments = safeAnnexes.filter(annex => annex.documents && annex.documents.length > 0);
 
   return (
@@ -355,8 +442,8 @@ function App() {
                 <PreviewPanel
                   selectedAnnex={selectedAnnex}
                   annexes={safeAnnexes}
-                  opisFormatting={opisFormatting || defaultFormattingOptions}
-                  coverFormatting={coverFormatting || defaultCoverFormattingOptions}
+                  opisFormatting={safeOpisFormatting}
+                  coverFormatting={safeCoverFormatting}
                 />
                 
                 {selectedAnnex && (
@@ -370,8 +457,8 @@ function App() {
               
               <TabsContent value="formatting" className="space-y-4">
                 <FormattingPanel
-                  opisFormatting={opisFormatting || defaultFormattingOptions}
-                  coverFormatting={coverFormatting || defaultCoverFormattingOptions}
+                  opisFormatting={safeOpisFormatting}
+                  coverFormatting={safeCoverFormatting}
                   onOpisFormattingChange={setOpisFormatting}
                   onCoverFormattingChange={setCoverFormatting}
                   onReset={handleResetFormatting}
