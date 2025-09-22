@@ -1,23 +1,56 @@
-# ✨ Welcome to Your Spark Template!
-You've just launched your brand-new Spark Template Codespace — everything’s fired up and ready for you to explore, build, and create with Spark!
+# Caselib Bundle - Legal Document Preparation
 
-This template is your blank canvas. It comes with a minimal setup to help you get started quickly with Spark development.
+A modern web application for preparing legal annex bundles (Romanian: dosare anexe legale).
 
-🚀 What's Inside?
-- A clean, minimal Spark environment
-- Pre-configured for local development
-- Ready to scale with your ideas
-  
-🧠 What Can You Do?
+## Features
 
-Right now, this is just a starting point — the perfect place to begin building and testing your Spark applications.
+### Core Functionality
+- **PDF Import**: Upload multiple PDF files via drag & drop or file picker
+- **Annex Management**: Maintain ordered list of annexes with auto-numbering
+- **Title Editing**: Rename annexes with persistent custom titles
+- **Drag & Drop Reordering**: Easily reorder annexes with automatic number updates
+- **Project Persistence**: Save and load project configurations
 
-🧹 Just Exploring?
-No problem! If you were just checking things out and don’t need to keep this code:
+### Document Generation
+- **Cover Page Generation**: Auto-generate professional cover pages for each annex
+- **Table of Contents (Opis)**: Auto-generate comprehensive table of contents
+- **PDF Export**: Merge all documents into a single, properly ordered PDF bundle
 
-- Simply delete your Spark.
-- Everything will be cleaned up — no traces left behind.
+### Customization
+- **Formatting Controls**: Configure fonts, sizes, alignment, and margins
+- **Live Preview**: See changes instantly in the preview panel
+- **Professional Styling**: Clean, legal-document appropriate formatting
 
-📄 License For Spark Template Resources 
+## How to Use
 
-The Spark Template files and resources from GitHub are licensed under the terms of the MIT license, Copyright GitHub, Inc.
+1. **Import PDFs**: Drag and drop or click to add PDF files
+2. **Organize**: Rename and reorder annexes as needed
+3. **Format**: Customize the appearance in the Formatting tab
+4. **Preview**: Review cover pages and table of contents
+5. **Export**: Generate the final consolidated PDF bundle
+
+## Technical Implementation
+
+- **Framework**: React 19 with TypeScript
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **PDF Processing**: PDF-lib for document manipulation
+- **Canvas Rendering**: html2canvas for cover page generation
+- **Persistence**: Browser storage with JSON project files
+
+## PDF Export Process
+
+The export generates a complete legal bundle:
+
+1. **Table of Contents (Opis)**: Lists all annexes with descriptions
+2. **For each annex**:
+   - Professional cover page with "ANEXA X" heading and title
+   - Complete original PDF content
+
+The final PDF maintains proper page ordering and professional formatting suitable for legal submissions.
+
+## Browser Compatibility
+
+- Modern browsers with PDF support
+- File API for drag & drop functionality
+- Canvas API for document rendering
+- No server dependency - fully client-side operation

@@ -22,7 +22,8 @@ import {
 } from '@/lib/project';
 import { 
   generateCoverPageHTML, 
-  generateOpisHTML 
+  generateOpisHTML,
+  exportToPDF
 } from '@/lib/pdf-generator';
 
 import { FileUploader } from '@/components/FileUploader';
@@ -130,13 +131,26 @@ function App() {
     });
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (!annexes || annexes.length === 0) {
       toast.error('Nu există anexe pentru export');
       return;
     }
 
-    toast.info('Exportul PDF nu este implementat în această versiune demo');
+    try {
+      toast.info('Se generează PDF-ul...');
+      
+      await exportToPDF({
+        annexes: annexes,
+        opisFormatting: opisFormatting || defaultFormattingOptions,
+        coverFormatting: coverFormatting || defaultCoverFormattingOptions,
+      });
+      
+      toast.success('PDF exportat cu succes!');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Eroare la exportarea PDF-ului');
+    }
   };
 
   const handleResetFormatting = () => {
