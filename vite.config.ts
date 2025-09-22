@@ -9,8 +9,8 @@ import { resolve } from 'path'
 const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname
 
 // https://vite.dev/config/
-export default defineConfig({
-  base: '/legal-annex-bundle-c/',
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? '/legal-annex-bundle-c/' : '/',
   plugins: [
     react(),
     tailwindcss(),
@@ -23,4 +23,4 @@ export default defineConfig({
       '@': resolve(projectRoot, 'src')
     }
   },
-});
+}));
