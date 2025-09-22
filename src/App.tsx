@@ -141,7 +141,7 @@ function App() {
     }
 
     // Check if any annex has documents
-    const annexesWithDocuments = annexes.filter(annex => annex.documents.length > 0);
+    const annexesWithDocuments = annexes.filter(annex => annex.documents && annex.documents.length > 0);
     if (annexesWithDocuments.length === 0) {
       toast.error('Nu există documente în anexe pentru export');
       return;
@@ -181,12 +181,12 @@ function App() {
         annex.id === annexId 
           ? removeDocumentFromAnnex(annex, documentId)
           : annex
-      ).filter(annex => annex.documents.length > 0) // Remove empty annexes
+      ).filter(annex => annex.documents && annex.documents.length > 0) // Remove empty annexes
     );
     
     // If the current annex becomes empty, clear selection
     const updatedAnnex = (annexes || []).find(a => a.id === annexId);
-    if (updatedAnnex && updatedAnnex.documents.length === 1) { // Will become 0 after removal
+    if (updatedAnnex && updatedAnnex.documents && updatedAnnex.documents.length === 1) { // Will become 0 after removal
       setSelectedAnnexId(null);
     }
     
@@ -216,7 +216,7 @@ function App() {
   };
 
   const safeAnnexes = annexes || [];
-  const annexesWithDocuments = safeAnnexes.filter(annex => annex.documents.length > 0);
+  const annexesWithDocuments = safeAnnexes.filter(annex => annex.documents && annex.documents.length > 0);
 
   return (
     <div className="min-h-screen bg-background">

@@ -12,10 +12,14 @@ export const generateId = (): string => {
 
 export const getDisplayTitle = (annex: AnnexItem): string => {
   if (annex.userTitle) return annex.userTitle;
-  if (annex.documents.length === 1) {
-    return annex.documents[0].autoTitle;
+  const documents = annex.documents || [];
+  if (documents.length === 1) {
+    return documents[0].autoTitle;
   }
-  return `Anexa ${annex.annexNumber} (${annex.documents.length} documente)`;
+  if (documents.length > 1) {
+    return `Anexa ${annex.annexNumber} (${documents.length} documente)`;
+  }
+  return `Anexa ${annex.annexNumber} (fără documente)`;
 };
 
 export const generateAutoTitle = (filename: string): string => {

@@ -23,14 +23,14 @@ export const addDocumentToAnnex = (annex: AnnexItem, file: File): AnnexItem => {
   const document = createDocumentFromFile(file);
   return {
     ...annex,
-    documents: [...annex.documents, document],
+    documents: [...(annex.documents || []), document],
   };
 };
 
 export const removeDocumentFromAnnex = (annex: AnnexItem, documentId: string): AnnexItem => {
   return {
     ...annex,
-    documents: annex.documents.filter(doc => doc.id !== documentId),
+    documents: (annex.documents || []).filter(doc => doc.id !== documentId),
   };
 };
 
@@ -39,7 +39,7 @@ export const saveProject = (project: ProjectModel): void => {
     ...project,
     annexes: project.annexes.map(annex => ({
       ...annex,
-      documents: annex.documents.map(({ file, ...doc }) => doc) // Remove file objects for serialization
+      documents: (annex.documents || []).map(({ file, ...doc }) => doc) // Remove file objects for serialization
     })),
   };
   
@@ -58,8 +58,14 @@ export const loadProject = async (file: File): Promise<Partial<ProjectModel>> =>
   const text = await file.text();
   const data = JSON.parse(text);
   
+  // Ensure all annexes have the documents property properly initialized
+  const normalizedAnnexes = (data.annexes || []).map((annex: any) => ({
+    ...annex,
+    documents: annex.documents || []
+  }));
+  
   return {
-    annexes: data.annexes || [],
+    annexes: normalizedAnnexes,
     opisFormatting: data.opisFormatting || defaultFormattingOptions,
     coverFormatting: data.coverFormatting || defaultCoverFormattingOptions,
     projectVersion: data.projectVersion || '1.0',

@@ -530,7 +530,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
         coverPages.forEach((page) => finalPDF.addPage(page));
         
         // Add all documents in this annex
-        for (const document of annex.documents) {
+        for (const document of annex.documents || []) {
           if (document.file) {
             try {
               const originalPDFBytes = await readPDFAsUint8Array(document.file);

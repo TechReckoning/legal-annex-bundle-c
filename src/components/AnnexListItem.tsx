@@ -99,12 +99,12 @@ export const AnnexListItem: React.FC<AnnexListItemProps> = ({
               )}
             </div>
             <div className="text-xs text-muted-foreground space-y-1">
-              {annex.documents.length === 1 ? (
+              {annex.documents && annex.documents.length === 1 ? (
                 <div>
                   {truncateFilePath(annex.documents[0].sourceFilePath)}
                   {annex.documents[0].file && ` • ${formatBytes(annex.documents[0].file.size)}`}
                 </div>
-              ) : (
+              ) : annex.documents && annex.documents.length > 1 ? (
                 <div>
                   {annex.documents.length} documente în această anexă
                   <div className="mt-1 space-y-0.5">
@@ -119,6 +119,10 @@ export const AnnexListItem: React.FC<AnnexListItemProps> = ({
                       </div>
                     )}
                   </div>
+                </div>
+              ) : (
+                <div className="text-muted-foreground italic">
+                  Anexă fără documente
                 </div>
               )}
             </div>
