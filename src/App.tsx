@@ -1,5 +1,5 @@
 import React from 'react';
-import { useKV } from '@github/spark/hooks';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,9 +35,9 @@ import { MultiDocumentInfo } from '@/components/InfoTooltip';
 import { BundleStats } from '@/components/BundleStats';
 
 function App(): React.ReactElement {
-  const [annexes, setAnnexes] = useKV<AnnexItem[]>('annexes', []);
-  const [opisFormatting, setOpisFormatting] = useKV<FormattingOptions>('opisFormatting', defaultFormattingOptions);
-  const [coverFormatting, setCoverFormatting] = useKV<FormattingOptions>('coverFormatting', defaultCoverFormattingOptions);
+  const [annexes, setAnnexes] = useLocalStorage<AnnexItem[]>('annexes', []);
+  const [opisFormatting, setOpisFormatting] = useLocalStorage<FormattingOptions>('opisFormatting', defaultFormattingOptions);
+  const [coverFormatting, setCoverFormatting] = useLocalStorage<FormattingOptions>('coverFormatting', defaultCoverFormattingOptions);
   const [selectedAnnexId, setSelectedAnnexId] = React.useState<string | null>(null);
 
   // Ensure annexes is always an array and handle potential storage issues

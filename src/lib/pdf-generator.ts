@@ -1,5 +1,6 @@
 import { FormattingOptions, AnnexItem } from '@/types';
 import { getDisplayTitle } from '@/lib/utils';
+import { processTextForPDF } from '@/lib/unicode-utils';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import html2canvas from 'html2canvas';
 
@@ -457,7 +458,7 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
   const headingSize = formatting.headingFontSize || 28;
   const headingWidth = (boldFont as any).widthOfTextAtSize(headingText, headingSize);
   
-  page.drawText(headingText, {
+  page.drawText(processTextForPDF(headingText), {
     x: centerX - (headingWidth / 2),
     y: contentStartY + 50,
     size: headingSize,
@@ -502,7 +503,7 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
   
   for (const line of lines) {
     const lineWidth = (titleFont as any).widthOfTextAtSize(line, titleSize);
-    page.drawText(line, {
+    page.drawText(processTextForPDF(line), {
       x: centerX - (lineWidth / 2),
       y: startY,
       size: titleSize,
@@ -576,7 +577,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
   const titleSize = (formatting.fontSize || 12) * 1.5;
   const titleWidth = (boldFont as any).widthOfTextAtSize(titleText, titleSize);
   
-  page.drawText(titleText, {
+  page.drawText(processTextForPDF(titleText), {
     x: (pageWidth - titleWidth) / 2,
     y: pageHeight - margin - 50,
     size: titleSize,
@@ -667,7 +668,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
     
     // Row text
     const numberText = `Anexa nr. ${annex.number}`;
-    page.drawText(numberText, {
+    page.drawText(processTextForPDF(numberText), {
       x: tableStartX + 10,
       y: currentY + 8,
       size: formatting.fontSize || 12,
@@ -684,7 +685,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
       titleText = titleText.slice(0, -4) + '...';
     }
     
-    page.drawText(titleText, {
+    page.drawText(processTextForPDF(titleText), {
       x: tableStartX + col1Width + 10,
       y: currentY + 8,
       size: titleSize,
@@ -787,7 +788,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
               const primaryColor = theme?.primary ? parseColor(theme.primary) : rgb(0.3, 0.3, 0.3);
               const secondaryColor = theme?.secondary ? parseColor(theme.secondary) : rgb(0.5, 0.5, 0.5);
               
-              separatorPage.drawText(`ANEXA ${annex.annexNumber} - DOCUMENT ${docIndex + 1}`, {
+              separatorPage.drawText(processTextForPDF(`ANEXA ${annex.annexNumber} - DOCUMENT ${docIndex + 1}`), {
                 x: 50,
                 y: 750,
                 size: 16,
@@ -795,7 +796,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
                 color: primaryColor,
               });
               
-              separatorPage.drawText(document.autoTitle, {
+              separatorPage.drawText(processTextForPDF(document.autoTitle), {
                 x: 50,
                 y: 720,
                 size: 12,
@@ -847,7 +848,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
                 const font = await finalPDF.embedFont(StandardFonts.Helvetica);
                 const boldFont = await finalPDF.embedFont(StandardFonts.HelveticaBold);
                 
-                errorPage.drawText('Eroare la încărcarea documentului PDF:', {
+                errorPage.drawText(processTextForPDF('Eroare la incarcarea documentului PDF:'), {
                   x: 50,
                   y: 750,
                   size: 14,
@@ -863,7 +864,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
                   color: rgb(0.3, 0.3, 0.3),
                 });
                 
-                errorPage.drawText('Verificați dacă fișierul este un PDF valid și nu este corupt.', {
+                errorPage.drawText(processTextForPDF('Verificati daca fisierul este un PDF valid si nu este corupt.'), {
                   x: 50,
                   y: 690,
                   size: 10,
@@ -889,7 +890,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
           const font = await finalPDF.embedFont(StandardFonts.Helvetica);
           const boldFont = await finalPDF.embedFont(StandardFonts.HelveticaBold);
           
-          errorPage.drawText(`Eroare la procesarea Anexei ${annex.annexNumber}`, {
+          errorPage.drawText(processTextForPDF(`Eroare la procesarea Anexei ${annex.annexNumber}`), {
             x: 50,
             y: 750,
             size: 14,
@@ -897,7 +898,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
             color: rgb(0.8, 0, 0),
           });
           
-          errorPage.drawText(getDisplayTitle(annex), {
+          errorPage.drawText(processTextForPDF(getDisplayTitle(annex)), {
             x: 50,
             y: 720,
             size: 12,
@@ -905,7 +906,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
             color: rgb(0.3, 0.3, 0.3),
           });
           
-          errorPage.drawText('Anexa a fost omisă din cauza unei erori.', {
+          errorPage.drawText(processTextForPDF('Anexa a fost omisa din cauza unei erori.'), {
             x: 50,
             y: 690,
             size: 10,
