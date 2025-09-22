@@ -169,7 +169,7 @@ function App() {
             <div>
               <h1 className="text-2xl font-bold text-foreground">Caselib Bundle</h1>
               <p className="text-sm text-muted-foreground">
-                Pregătire profesională de dosare anexe legale
+                Anexe pregătite profesionist și eficient
               </p>
             </div>
             <div className="flex items-center gap-2">
