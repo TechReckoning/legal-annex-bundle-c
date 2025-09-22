@@ -1,6 +1,10 @@
 import { FormattingOptions, AnnexItem } from '@/types';
 import { getDisplayTitle } from '@/lib/utils';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import html2canvas from 'html2canvas';
 
 export interface CoverPageConfig {

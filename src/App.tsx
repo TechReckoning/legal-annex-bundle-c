@@ -36,7 +36,7 @@ import { DocumentManager } from '@/components/DocumentManager';
 import { MultiDocumentInfo } from '@/components/InfoTooltip';
 import { BundleStats } from '@/components/BundleStats';
 
-function App() {
+function App(): React.JSX.Element {
   const [annexes, setAnnexes] = useKV<AnnexItem[]>('annexes', []);
   const [opisFormatting, setOpisFormatting] = useKV<FormattingOptions>('opisFormatting', defaultFormattingOptions);
   const [coverFormatting, setCoverFormatting] = useKV<FormattingOptions>('coverFormatting', defaultCoverFormattingOptions);
@@ -85,7 +85,7 @@ function App() {
     }
   }, [safeAnnexes, selectedAnnexId]);
 
-  const handleFilesSelected = (files: File[]) => {
+  const handleFilesSelected = React.useCallback((files: File[]) => {
     try {
       const newAnnexes = files.map(createAnnexFromFile);
       setAnnexes(currentAnnexes => {
@@ -103,9 +103,9 @@ function App() {
       console.error('Error adding files:', error);
       toast.error('Eroare la adăugarea fișierelor');
     }
-  };
+  }, [selectedAnnexId, setAnnexes]);
 
-  const handleLoadProject = async (file: File) => {
+  const handleLoadProject = React.useCallback(async (file: File) => {
     try {
       const projectData = await loadProject(file);
       
@@ -124,9 +124,9 @@ function App() {
       toast.error('Eroare la încărcarea proiectului');
       console.error('Error loading project:', error);
     }
-  };
+  }, [setAnnexes, setOpisFormatting, setCoverFormatting]);
 
-  const handleSaveProject = () => {
+  const handleSaveProject = React.useCallback(() => {
     try {
       const project: ProjectModel = {
         annexes: safeAnnexes,
@@ -141,9 +141,9 @@ function App() {
       console.error('Error saving project:', error);
       toast.error('Eroare la salvarea proiectului');
     }
-  };
+  }, [safeAnnexes, safeOpisFormatting, safeCoverFormatting]);
 
-  const handleRemoveAnnex = (id: string) => {
+  const handleRemoveAnnex = React.useCallback((id: string) => {
     try {
       setAnnexes(currentAnnexes => {
         const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
@@ -160,9 +160,9 @@ function App() {
       console.error('Error removing annex:', error);
       toast.error('Eroare la eliminarea anexei');
     }
-  };
+  }, [selectedAnnexId, setAnnexes]);
 
-  const handleUpdateTitle = (id: string, title: string) => {
+  const handleUpdateTitle = React.useCallback((id: string, title: string) => {
     try {
       setAnnexes(currentAnnexes => {
         const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
@@ -176,9 +176,9 @@ function App() {
       console.error('Error updating title:', error);
       toast.error('Eroare la actualizarea titlului');
     }
-  };
+  }, [setAnnexes]);
 
-  const handleMoveUp = (id: string) => {
+  const handleMoveUp = React.useCallback((id: string) => {
     try {
       setAnnexes(currentAnnexes => {
         const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
@@ -192,9 +192,9 @@ function App() {
       console.error('Error moving annex up:', error);
       toast.error('Eroare la reordonarea anexei');
     }
-  };
+  }, [setAnnexes]);
 
-  const handleMoveDown = (id: string) => {
+  const handleMoveDown = React.useCallback((id: string) => {
     try {
       setAnnexes(currentAnnexes => {
         const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
@@ -208,9 +208,9 @@ function App() {
       console.error('Error moving annex down:', error);
       toast.error('Eroare la reordonarea anexei');
     }
-  };
+  }, [setAnnexes]);
 
-  const handleExportPDF = async () => {
+  const handleExportPDF = React.useCallback(async () => {
     if (!safeAnnexes || safeAnnexes.length === 0) {
       toast.error('Nu există anexe pentru export');
       return;
@@ -247,9 +247,9 @@ function App() {
       const errorMessage = error instanceof Error ? error.message : 'Eroare necunoscută';
       toast.error(`Eroare la exportarea PDF-ului: ${errorMessage}`);
     }
-  };
+  }, [safeAnnexes, safeOpisFormatting, safeCoverFormatting]);
 
-  const handleAddDocument = (annexId: string, file: File) => {
+  const handleAddDocument = React.useCallback((annexId: string, file: File) => {
     try {
       setAnnexes(currentAnnexes => {
         const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
@@ -265,9 +265,9 @@ function App() {
       console.error('Error adding document:', error);
       toast.error('Eroare la adăugarea documentului');
     }
-  };
+  }, [setAnnexes]);
 
-  const handleRemoveDocument = (annexId: string, documentId: string) => {
+  const handleRemoveDocument = React.useCallback((annexId: string, documentId: string) => {
     try {
       setAnnexes(currentAnnexes => {
         const current = Array.isArray(currentAnnexes) ? currentAnnexes : [];
@@ -292,9 +292,9 @@ function App() {
       console.error('Error removing document:', error);
       toast.error('Eroare la eliminarea documentului');
     }
-  };
+  }, [setAnnexes, safeAnnexes]);
 
-  const handleCreateNewAnnex = () => {
+  const handleCreateNewAnnex = React.useCallback(() => {
     try {
       const newAnnex: AnnexItem = {
         id: generateId(),
@@ -314,9 +314,9 @@ function App() {
       console.error('Error creating new annex:', error);
       toast.error('Eroare la crearea anexei');
     }
-  };
+  }, [setAnnexes]);
 
-  const handleResetFormatting = () => {
+  const handleResetFormatting = React.useCallback(() => {
     try {
       const resetOpisFormatting = {
         ...defaultFormattingOptions,
@@ -334,10 +334,12 @@ function App() {
       console.error('Error resetting formatting:', error);
       toast.error('Eroare la resetarea formatării');
     }
-  };
+  }, [setOpisFormatting, setCoverFormatting]);
 
-  const annexesWithDocuments = safeAnnexes.filter(annex => 
-    annex.documents && Array.isArray(annex.documents) && annex.documents.length > 0
+  const annexesWithDocuments = React.useMemo(() => 
+    safeAnnexes.filter(annex => 
+      annex.documents && Array.isArray(annex.documents) && annex.documents.length > 0
+    ), [safeAnnexes]
   );
 
   return (
