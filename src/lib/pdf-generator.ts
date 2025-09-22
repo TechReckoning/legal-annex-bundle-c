@@ -3,6 +3,23 @@ import { getDisplayTitle } from '@/lib/utils';
 import { PDFDocument, rgb, StandardFonts, PDFFont } from 'pdf-lib';
 import html2canvas from 'html2canvas';
 
+// Helper function for color parsing (used in multiple places)
+const parseColor = (colorStr: string) => {
+  if (!colorStr || typeof colorStr !== 'string') {
+    return rgb(0, 0, 0);
+  }
+  try {
+    const hex = colorStr.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16) / 255;
+    const g = parseInt(hex.substring(2, 4), 16) / 255;
+    const b = parseInt(hex.substring(4, 6), 16) / 255;
+    return rgb(r, g, b);
+  } catch (error) {
+    console.warn('Invalid color string:', colorStr);
+    return rgb(0, 0, 0);
+  }
+};
+
 export interface CoverPageConfig {
   annexNumber: number;
   title: string;
@@ -22,8 +39,17 @@ export interface PDFExportConfig {
 
 export const generateCoverPageHTML = (config: CoverPageConfig): string => {
   const { annexNumber, title, formatting } = config;
+  if (!config || !formatting) {
+    throw new Error('Invalid cover page configuration');
+  }
+  
   const headingText = formatting.headingFormat?.replace('{n}', annexNumber.toString()) || `ANEXA ${annexNumber}`;
-  const theme = formatting.colorTheme;
+  const theme = formatting.colorTheme || { 
+    primary: '#1a1a1a', 
+    secondary: '#333333', 
+    text: '#1a1a1a', 
+    background: '#ffffff' 
+  };
   const logoUrl = formatting.logoFile ? URL.createObjectURL(formatting.logoFile) : '';
   
   const logoStyles = formatting.logoFile ? `
@@ -120,7 +146,17 @@ export const generateCoverPageHTML = (config: CoverPageConfig): string => {
 
 export const generateOpisHTML = (config: OpisTableConfig): string => {
   const { annexes, formatting } = config;
-  const theme = formatting.colorTheme;
+  if (!config || !formatting || !annexes) {
+    throw new Error('Invalid Opis configuration');
+  }
+
+  const theme = formatting.colorTheme || { 
+    primary: '#1a1a1a', 
+    secondary: '#333333', 
+    text: '#1a1a1a', 
+    background: '#ffffff',
+    accent: '#f5f5f5'
+  };
   
   const tableRows = annexes.map(annex => `
     <tr>
@@ -304,6 +340,10 @@ const htmlToPDFPage = async (html: string): Promise<Uint8Array> => {
 };
 
 const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> => {
+  if (!config || !config.formatting) {
+    throw new Error('Invalid cover page configuration');
+  }
+
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([595.28, 841.89]); // A4 in points
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -311,7 +351,12 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
   
   const { annexNumber, title, formatting } = config;
   const headingText = formatting.headingFormat?.replace('{n}', annexNumber.toString()) || `ANEXA ${annexNumber}`;
-  const theme = formatting.colorTheme;
+  const theme = formatting.colorTheme || { 
+    primary: '#1a1a1a', 
+    secondary: '#333333', 
+    text: '#1a1a1a', 
+    background: '#ffffff' 
+  };
   
   const pageHeight = 841.89;
   const pageWidth = 595.28;
@@ -486,13 +531,23 @@ const readFileAsBytes = (file: File): Promise<Uint8Array> => {
 };
 
 const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
+  if (!config || !config.formatting || !config.annexes) {
+    throw new Error('Invalid Opis configuration');
+  }
+
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([595.28, 841.89]); // A4 in points
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   
   const { annexes, formatting } = config;
-  const theme = formatting.colorTheme;
+  const theme = formatting.colorTheme || { 
+    primary: '#1a1a1a', 
+    secondary: '#333333', 
+    text: '#1a1a1a', 
+    background: '#ffffff',
+    accent: '#f5f5f5'
+  };
   
   // Parse theme colors or use defaults
   const primaryColor = theme?.primary ? parseColor(theme.primary) : rgb(0.1, 0.1, 0.1);
@@ -889,13 +944,4 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
     console.error('Error exporting PDF:', error);
     throw new Error(`Eroare la exportarea PDF-ului: ${error instanceof Error ? error.message : 'Eroare necunoscută'}`);
   }
-};
-
-// Helper function for color parsing (used in multiple places)
-const parseColor = (colorStr: string) => {
-  const hex = colorStr.replace('#', '');
-  const r = parseInt(hex.substring(0, 2), 16) / 255;
-  const g = parseInt(hex.substring(2, 4), 16) / 255;
-  const b = parseInt(hex.substring(4, 6), 16) / 255;
-  return rgb(r, g, b);
 };
