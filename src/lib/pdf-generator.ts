@@ -690,8 +690,11 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
     try {
       const opisPDFBytes = await createOpisPDF(opisConfig);
       const opisPDF = await PDFDocument.load(opisPDFBytes);
-      const opisPages = await (finalPDF as any).copyPages(opisPDF, (opisPDF as any).getPageIndices());
-      opisPages.forEach((page: any) => finalPDF.addPage(page));
+      const opisPages = await finalPDF.copyPages(opisPDF, opisPDF.getPageIndices());
+      // Add pages to the document
+      for (const page of opisPages) {
+        finalPDF.addPage(page);
+      }
     } catch (error) {
       console.error('Error creating Opis:', error);
       throw new Error('Eroare la crearea cuprinsului (Opis)');
@@ -711,8 +714,11 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
         
         const coverPDFBytes = await createCoverPagePDF(coverConfig);
         const coverPDF = await PDFDocument.load(coverPDFBytes);
-        const coverPages = await (finalPDF as any).copyPages(coverPDF, (coverPDF as any).getPageIndices());
-        coverPages.forEach((page: any) => finalPDF.addPage(page));
+        const coverPages = await finalPDF.copyPages(coverPDF, coverPDF.getPageIndices());
+        // Add pages to the document
+        for (const page of coverPages) {
+          finalPDF.addPage(page);
+        }
         
         // Add all documents in this annex
         const documents = annex.documents || [];
@@ -748,10 +754,11 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
               });
               
               // Draw a decorative line
-              (separatorPage as any).drawLine({
-                start: { x: 50, y: 700 },
-                end: { x: 545, y: 700 },
-                thickness: 1,
+              separatorPage.drawRectangle({
+                x: 50,
+                y: 700,
+                width: 495,
+                height: 1,
                 color: rgb(0.8, 0.8, 0.8),
               });
               
@@ -775,8 +782,11 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
             try {
               const originalPDFBytes = await readPDFAsUint8Array(document.file);
               const originalPDF = await PDFDocument.load(originalPDFBytes);
-              const originalPages = await (finalPDF as any).copyPages(originalPDF, (originalPDF as any).getPageIndices());
-              originalPages.forEach((page: any) => finalPDF.addPage(page));
+              const originalPages = await finalPDF.copyPages(originalPDF, originalPDF.getPageIndices());
+              // Add pages to the document
+              for (const page of originalPages) {
+                finalPDF.addPage(page);
+              }
               
             } catch (pdfError) {
               console.warn(`Could not process PDF file "${document.file.name}":`, pdfError);
@@ -860,7 +870,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
     }
     
     // Check if we have any pages in the final PDF
-    if ((finalPDF as any).getPageCount() === 0) {
+    if (finalPDF.getPageCount() === 0) {
       throw new Error('Nu s-au putut genera pagini pentru PDF');
     }
     

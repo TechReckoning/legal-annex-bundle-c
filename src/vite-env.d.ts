@@ -60,9 +60,7 @@ declare module 'html2canvas' {
 
 declare module 'pdf-lib' {
   export interface PDFDocument {
-    create(): Promise<PDFDocument>;
-    load(pdf: string | Uint8Array | ArrayBuffer): Promise<PDFDocument>;
-    addPage(size?: [number, number]): PDFPage;
+    addPage(page?: PDFPage | [number, number]): PDFPage;
     getPages(): PDFPage[];
     getPageCount(): number;
     embedFont(font: any): Promise<PDFFont>;
