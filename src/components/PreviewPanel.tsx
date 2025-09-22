@@ -16,13 +16,25 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
   opisFormatting,
   coverFormatting,
 }) => {
+  const [logoUrl, setLogoUrl] = React.useState<string | null>(null);
+
+  // Properly manage logo URL lifecycle
+  React.useEffect(() => {
+    if (coverFormatting.logoFile) {
+      const url = URL.createObjectURL(coverFormatting.logoFile);
+      setLogoUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setLogoUrl(null);
+    }
+  }, [coverFormatting.logoFile]);
+
   const renderCoverPreview = () => {
     if (!selectedAnnex) return null;
 
     const title = getDisplayTitle(selectedAnnex);
     const headingText = coverFormatting.headingFormat?.replace('{n}', selectedAnnex.annexNumber.toString()) || `ANEXA ${selectedAnnex.annexNumber}`;
     const theme = coverFormatting.colorTheme;
-    const logoUrl = coverFormatting.logoFile ? URL.createObjectURL(coverFormatting.logoFile) : null;
 
     const containerStyle = {
       backgroundColor: theme?.background || '#ffffff',
