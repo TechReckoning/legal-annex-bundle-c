@@ -1,0 +1,135 @@
+import fs from "fs";
+
+/** @type {import('tailwindcss').Config} */
+
+let theme = {};
+try {
+  const themePath = "./theme.json";
+
+  if (fs.existsSync(themePath)) {
+    theme = JSON.parse(fs.readFileSync(themePath, "utf-8"));
+  }
+} catch (err) {
+  console.error('failed to parse custom styles', err)
+}
+const defaultTheme = {
+  container: {
+    center: true,
+    padding: "2rem",
+  },
+  extend: {
+    screens: {
+      coarse: { raw: "(pointer: coarse)" },
+      fine: { raw: "(pointer: fine)" },
+      pwa: { raw: "(display-mode: standalone)" },
+    },
+    colors: {
+      neutral: {
+        1: "hsl(0 0% 100%)",
+        2: "hsl(0 0% 98%)",
+        3: "hsl(0 0% 96%)",
+        4: "hsl(0 0% 94%)",
+        5: "hsl(0 0% 92%)",
+        6: "hsl(0 0% 90%)",
+        7: "hsl(0 0% 88%)",
+        8: "hsl(0 0% 85%)",
+        9: "hsl(0 0% 82%)",
+        10: "hsl(0 0% 78%)",
+        11: "hsl(0 0% 65%)",
+        12: "hsl(0 0% 9%)",
+        contrast: "hsl(0 0% 9%)",
+      },
+      accent: {
+        1: "hsl(240 100% 99%)",
+        2: "hsl(240 100% 98%)",
+        3: "hsl(240 100% 96%)",
+        4: "hsl(240 100% 94%)",
+        5: "hsl(240 100% 92%)",
+        6: "hsl(240 100% 90%)",
+        7: "hsl(240 100% 88%)",
+        8: "hsl(240 100% 85%)",
+        9: "hsl(240 100% 70%)",
+        10: "hsl(240 100% 60%)",
+        11: "hsl(240 100% 50%)",
+        12: "hsl(240 100% 20%)",
+        contrast: "hsl(0 0% 100%)",
+      },
+      "accent-secondary": {
+        1: "hsl(45 100% 99%)",
+        2: "hsl(45 100% 98%)",
+        3: "hsl(45 100% 96%)",
+        4: "hsl(45 100% 94%)",
+        5: "hsl(45 100% 92%)",
+        6: "hsl(45 100% 90%)",
+        7: "hsl(45 100% 88%)",
+        8: "hsl(45 100% 85%)",
+        9: "hsl(45 100% 70%)",
+        10: "hsl(45 100% 60%)",
+        11: "hsl(45 100% 50%)",
+        12: "hsl(45 100% 20%)",
+        contrast: "hsl(0 0% 100%)",
+      },
+      fg: {
+        DEFAULT: "hsl(0 0% 9%)",
+        secondary: "hsl(0 0% 65%)",
+      },
+      bg: {
+        DEFAULT: "hsl(0 0% 100%)",
+        inset: "hsl(0 0% 96%)",
+        overlay: "hsl(0 0% 0% / 0.5)",
+      },
+      "focus-ring": "hsl(240 100% 50%)",
+    },
+    borderRadius: {
+      sm: "0.125rem",
+      md: "0.375rem",
+      lg: "0.5rem",
+      xl: "0.75rem",
+      "2xl": "1rem",
+      full: "9999px",
+    },
+  },
+  spacing: {
+    px: "1px",
+    0: "0px",
+    0.5: "0.125rem",
+    1: "0.25rem",
+    1.5: "0.375rem",
+    2: "0.5rem",
+    2.5: "0.625rem",
+    3: "0.75rem",
+    3.5: "0.875rem",
+    4: "1rem",
+    5: "1.25rem",
+    6: "1.5rem",
+    7: "1.75rem",
+    8: "2rem",
+    9: "2.25rem",
+    10: "2.5rem",
+    11: "2.75rem",
+    12: "3rem",
+    14: "3.5rem",
+    16: "4rem",
+    20: "5rem",
+    24: "6rem",
+    28: "7rem",
+    32: "8rem",
+    36: "9rem",
+    40: "10rem",
+    44: "11rem",
+    48: "12rem",
+    52: "13rem",
+    56: "14rem",
+    60: "15rem",
+    64: "16rem",
+    72: "18rem",
+    80: "20rem",
+    96: "24rem",
+  },
+  darkMode: ["selector", '[data-appearance="dark"]'],
+}
+
+export default {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  theme: { ...defaultTheme, ...theme },
+};
