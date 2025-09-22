@@ -150,7 +150,10 @@ function App() {
     }
 
     try {
-      toast.info('Se generează PDF-ul...');
+      toast.info('Se inițializează exportul...');
+      
+      const totalDocuments = annexesWithDocuments.reduce((sum, annex) => sum + (annex.documents?.length || 0), 0);
+      toast.info(`Se procesează ${annexesWithDocuments.length} anexe cu ${totalDocuments} documente...`);
       
       await exportToPDF({
         annexes: annexesWithDocuments, // Only export annexes with documents
@@ -158,10 +161,11 @@ function App() {
         coverFormatting: coverFormatting || defaultCoverFormattingOptions,
       });
       
-      toast.success('PDF exportat cu succes!');
+      toast.success(`PDF exportat cu succes! (${annexesWithDocuments.length} anexe, ${totalDocuments} documente)`);
     } catch (error) {
       console.error('Export error:', error);
-      toast.error('Eroare la exportarea PDF-ului');
+      const errorMessage = error instanceof Error ? error.message : 'Eroare necunoscută';
+      toast.error(`Eroare la exportarea PDF-ului: ${errorMessage}`);
     }
   };
 

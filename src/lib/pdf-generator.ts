@@ -320,9 +320,9 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
   // Parse theme colors or use defaults
   const parseColor = (colorStr: string) => {
     const hex = colorStr.replace('#', '');
-    const r = parseInt(hex.substr(0, 2), 16) / 255;
-    const g = parseInt(hex.substr(2, 2), 16) / 255;
-    const b = parseInt(hex.substr(4, 2), 16) / 255;
+    const r = parseInt(hex.substring(0, 2), 16) / 255;
+    const g = parseInt(hex.substring(2, 4), 16) / 255;
+    const b = parseInt(hex.substring(4, 6), 16) / 255;
     return rgb(r, g, b);
   };
   
@@ -496,14 +496,6 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
   const theme = formatting.colorTheme;
   
   // Parse theme colors or use defaults
-  const parseColor = (colorStr: string) => {
-    const hex = colorStr.replace('#', '');
-    const r = parseInt(hex.substr(0, 2), 16) / 255;
-    const g = parseInt(hex.substr(2, 2), 16) / 255;
-    const b = parseInt(hex.substr(4, 2), 16) / 255;
-    return rgb(r, g, b);
-  };
-  
   const primaryColor = theme?.primary ? parseColor(theme.primary) : rgb(0.1, 0.1, 0.1);
   const secondaryColor = theme?.secondary ? parseColor(theme.secondary) : rgb(0.2, 0.2, 0.2);
   const accentColor = theme?.accent ? parseColor(theme.accent) : rgb(0.95, 0.95, 0.95);
@@ -669,74 +661,112 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
   try {
     const { annexes, opisFormatting, coverFormatting } = config;
     
+    // Validate that we have annexes with documents
+    if (!annexes || annexes.length === 0) {
+      throw new Error('Nu există anexe pentru export');
+    }
+    
+    const annexesWithDocuments = annexes.filter(annex => annex.documents && annex.documents.length > 0);
+    if (annexesWithDocuments.length === 0) {
+      throw new Error('Nu există documente în anexe pentru export');
+    }
+    
     // Create the final PDF document
     const finalPDF = await PDFDocument.create();
     
     // Generate and add Opis (Table of Contents)
     const opisConfig: OpisTableConfig = {
-      annexes: annexes.map(annex => ({
+      annexes: annexesWithDocuments.map(annex => ({
         number: annex.annexNumber,
         title: getDisplayTitle(annex)
       })),
       formatting: opisFormatting
     };
     
-    const opisPDFBytes = await createOpisPDF(opisConfig);
-    const opisPDF = await PDFDocument.load(opisPDFBytes);
-    const opisPages = await finalPDF.copyPages(opisPDF, opisPDF.getPageIndices());
-    opisPages.forEach((page) => finalPDF.addPage(page));
+    try {
+      const opisPDFBytes = await createOpisPDF(opisConfig);
+      const opisPDF = await PDFDocument.load(opisPDFBytes);
+      const opisPages = await finalPDF.copyPages(opisPDF, opisPDF.getPageIndices());
+      opisPages.forEach((page) => finalPDF.addPage(page));
+    } catch (error) {
+      console.error('Error creating Opis:', error);
+      throw new Error('Eroare la crearea cuprinsului (Opis)');
+    }
     
-    // For each annex, add cover page and then the original PDF
-    for (const annex of annexes) {
-      // Generate and add cover page
-      const coverConfig: CoverPageConfig = {
-        annexNumber: annex.annexNumber,
-        title: getDisplayTitle(annex),
-        formatting: coverFormatting
-      };
+    // For each annex with documents, add cover page and documents
+    for (let annexIndex = 0; annexIndex < annexesWithDocuments.length; annexIndex++) {
+      const annex = annexesWithDocuments[annexIndex];
       
       try {
+        // Generate and add cover page
+        const coverConfig: CoverPageConfig = {
+          annexNumber: annex.annexNumber,
+          title: getDisplayTitle(annex),
+          formatting: coverFormatting
+        };
+        
         const coverPDFBytes = await createCoverPagePDF(coverConfig);
         const coverPDF = await PDFDocument.load(coverPDFBytes);
         const coverPages = await finalPDF.copyPages(coverPDF, coverPDF.getPageIndices());
         coverPages.forEach((page) => finalPDF.addPage(page));
         
         // Add all documents in this annex
-        for (let docIndex = 0; docIndex < (annex.documents || []).length; docIndex++) {
-          const document = annex.documents![docIndex];
+        const documents = annex.documents || [];
+        for (let docIndex = 0; docIndex < documents.length; docIndex++) {
+          const document = documents[docIndex];
           
           // Add a document separator page if there are multiple documents and this isn't the first one
-          if (docIndex > 0 && annex.documents!.length > 1) {
-            const separatorPage = finalPDF.addPage([595.28, 841.89]);
-            const font = await finalPDF.embedFont(StandardFonts.Helvetica);
-            const boldFont = await finalPDF.embedFont(StandardFonts.HelveticaBold);
-            
-            // Draw separator info
-            separatorPage.drawText(`ANEXA ${annex.annexNumber} - DOCUMENT ${docIndex + 1}`, {
-              x: 50,
-              y: 750,
-              size: 16,
-              font: boldFont,
-              color: rgb(0.3, 0.3, 0.3),
-            });
-            
-            separatorPage.drawText(document.autoTitle, {
-              x: 50,
-              y: 720,
-              size: 12,
-              font: font,
-              color: rgb(0.5, 0.5, 0.5),
-            });
-            
-            // Draw a decorative line
-            separatorPage.drawLine({
-              start: { x: 50, y: 700 },
-              end: { x: 545, y: 700 },
-              thickness: 1,
-              color: rgb(0.8, 0.8, 0.8),
-            });
+          if (docIndex > 0 && documents.length > 1) {
+            try {
+              const separatorPage = finalPDF.addPage([595.28, 841.89]);
+              const font = await finalPDF.embedFont(StandardFonts.Helvetica);
+              const boldFont = await finalPDF.embedFont(StandardFonts.HelveticaBold);
+              
+              // Draw separator info with better styling
+              const theme = coverFormatting.colorTheme;
+              const primaryColor = theme?.primary ? parseColor(theme.primary) : rgb(0.3, 0.3, 0.3);
+              const secondaryColor = theme?.secondary ? parseColor(theme.secondary) : rgb(0.5, 0.5, 0.5);
+              
+              separatorPage.drawText(`ANEXA ${annex.annexNumber} - DOCUMENT ${docIndex + 1}`, {
+                x: 50,
+                y: 750,
+                size: 16,
+                font: boldFont,
+                color: primaryColor,
+              });
+              
+              separatorPage.drawText(document.autoTitle, {
+                x: 50,
+                y: 720,
+                size: 12,
+                font: font,
+                color: secondaryColor,
+              });
+              
+              // Draw a decorative line
+              separatorPage.drawLine({
+                start: { x: 50, y: 700 },
+                end: { x: 545, y: 700 },
+                thickness: 1,
+                color: rgb(0.8, 0.8, 0.8),
+              });
+              
+              // Add document index info
+              separatorPage.drawText(`Document ${docIndex + 1} din ${documents.length}`, {
+                x: 50,
+                y: 680,
+                size: 10,
+                font: font,
+                color: rgb(0.6, 0.6, 0.6),
+              });
+              
+            } catch (separatorError) {
+              console.warn('Could not create separator page:', separatorError);
+              // Continue without separator page
+            }
           }
           
+          // Add the actual document
           if (document.file) {
             try {
               const originalPDFBytes = await readPDFAsUint8Array(document.file);
@@ -745,52 +775,89 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
               originalPages.forEach((page) => finalPDF.addPage(page));
               
             } catch (pdfError) {
-              console.warn('Could not process PDF file:', pdfError);
+              console.warn(`Could not process PDF file "${document.file.name}":`, pdfError);
+              
               // Add error page for this document
-              const errorPage = finalPDF.addPage([595.28, 841.89]);
-              const font = await finalPDF.embedFont(StandardFonts.Helvetica);
-              
-              errorPage.drawText('Error loading PDF document:', {
-                x: 50,
-                y: 750,
-                size: 12,
-                font: font,
-                color: rgb(0.8, 0, 0),
-              });
-              
-              errorPage.drawText(document.file.name, {
-                x: 50,
-                y: 720,
-                size: 10,
-                font: font,
-                color: rgb(0.3, 0.3, 0.3),
-              });
+              try {
+                const errorPage = finalPDF.addPage([595.28, 841.89]);
+                const font = await finalPDF.embedFont(StandardFonts.Helvetica);
+                const boldFont = await finalPDF.embedFont(StandardFonts.HelveticaBold);
+                
+                errorPage.drawText('Eroare la încărcarea documentului PDF:', {
+                  x: 50,
+                  y: 750,
+                  size: 14,
+                  font: boldFont,
+                  color: rgb(0.8, 0, 0),
+                });
+                
+                errorPage.drawText(document.file.name, {
+                  x: 50,
+                  y: 720,
+                  size: 12,
+                  font: font,
+                  color: rgb(0.3, 0.3, 0.3),
+                });
+                
+                errorPage.drawText('Verificați dacă fișierul este un PDF valid și nu este corupt.', {
+                  x: 50,
+                  y: 690,
+                  size: 10,
+                  font: font,
+                  color: rgb(0.5, 0.5, 0.5),
+                });
+                
+              } catch (errorPageError) {
+                console.error('Could not create error page:', errorPageError);
+              }
             }
+          } else {
+            console.warn(`Document ${document.id} has no file attached`);
           }
         }
         
-      } catch (error) {
-        console.error(`Error processing annex ${annex.annexNumber}:`, error);
-        // Add error page
-        const errorPage = finalPDF.addPage([595.28, 841.89]);
-        const font = await finalPDF.embedFont(StandardFonts.Helvetica);
+      } catch (annexError) {
+        console.error(`Error processing annex ${annex.annexNumber}:`, annexError);
         
-        errorPage.drawText(`Error processing Annexa ${annex.annexNumber}`, {
-          x: 50,
-          y: 750,
-          size: 12,
-          font: font,
-          color: rgb(0.8, 0, 0),
-        });
-        
-        errorPage.drawText(getDisplayTitle(annex), {
-          x: 50,
-          y: 720,
-          size: 10,
-          font: font,
-          color: rgb(0.3, 0.3, 0.3),
-        });
+        // Add error page for this entire annex
+        try {
+          const errorPage = finalPDF.addPage([595.28, 841.89]);
+          const font = await finalPDF.embedFont(StandardFonts.Helvetica);
+          const boldFont = await finalPDF.embedFont(StandardFonts.HelveticaBold);
+          
+          errorPage.drawText(`Eroare la procesarea Anexei ${annex.annexNumber}`, {
+            x: 50,
+            y: 750,
+            size: 14,
+            font: boldFont,
+            color: rgb(0.8, 0, 0),
+          });
+          
+          errorPage.drawText(getDisplayTitle(annex), {
+            x: 50,
+            y: 720,
+            size: 12,
+            font: font,
+            color: rgb(0.3, 0.3, 0.3),
+          });
+          
+          errorPage.drawText('Anexa a fost omisă din cauza unei erori.', {
+            x: 50,
+            y: 690,
+            size: 10,
+            font: font,
+            color: rgb(0.5, 0.5, 0.5),
+          });
+          
+        } catch (errorPageError) {
+          console.error('Could not create annex error page:', errorPageError);
+        }
       }
+    }
+    
+    // Check if we have any pages in the final PDF
+    if (finalPDF.getPageCount() === 0) {
+      throw new Error('Nu s-au putut genera pagini pentru PDF');
     }
     
     // Download the final PDF
@@ -811,6 +878,15 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
     
   } catch (error) {
     console.error('Error exporting PDF:', error);
-    throw new Error('Eroare la exportarea PDF-ului');
+    throw new Error(`Eroare la exportarea PDF-ului: ${error instanceof Error ? error.message : 'Eroare necunoscută'}`);
   }
+};
+
+// Helper function for color parsing (used in multiple places)
+const parseColor = (colorStr: string) => {
+  const hex = colorStr.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  return rgb(r, g, b);
 };
