@@ -1,10 +1,6 @@
 import { FormattingOptions, AnnexItem } from '@/types';
 import { getDisplayTitle } from '@/lib/utils';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+import { PDFDocument, rgb, StandardFonts, PDFFont } from 'pdf-lib';
 import html2canvas from 'html2canvas';
 
 export interface CoverPageConfig {
@@ -274,8 +270,7 @@ const htmlToPDFPage = async (html: string): Promise<Uint8Array> => {
         const canvas = await html2canvas(container, {
           width: 794, // A4 width in pixels at 96 DPI
           height: 1123, // A4 height in pixels at 96 DPI
-          backgroundColor: '#ffffff',
-          scale: 1,
+          background: '#ffffff',
           useCORS: true,
         });
         
@@ -415,7 +410,7 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
   
   // Draw heading
   const headingSize = formatting.headingFontSize || 28;
-  const headingWidth = (boldFont as any).widthOfTextAtSize(headingText, headingSize);
+  const headingWidth = (boldFont as PDFFont).widthOfTextAtSize(headingText, headingSize);
   
   page.drawText(headingText, {
     x: centerX - (headingWidth / 2),
@@ -437,7 +432,7 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
   
   for (const word of words) {
     const testLine = currentLine ? `${currentLine} ${word}` : word;
-    const testWidth = (titleFont as any).widthOfTextAtSize(testLine, titleSize);
+    const testWidth = (titleFont as PDFFont).widthOfTextAtSize(testLine, titleSize);
     
     if (testWidth <= maxWidth) {
       currentLine = testLine;
@@ -461,7 +456,7 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
   let startY = contentStartY - 30 - (totalTitleHeight / 2);
   
   for (const line of lines) {
-    const lineWidth = (titleFont as any).widthOfTextAtSize(line, titleSize);
+    const lineWidth = (titleFont as PDFFont).widthOfTextAtSize(line, titleSize);
     page.drawText(line, {
       x: centerX - (lineWidth / 2),
       y: startY,
@@ -524,7 +519,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
   // Title
   const titleText = 'OPIS';
   const titleSize = (formatting.fontSize || 12) * 1.5;
-  const titleWidth = (boldFont as any).widthOfTextAtSize(titleText, titleSize);
+  const titleWidth = (boldFont as PDFFont).widthOfTextAtSize(titleText, titleSize);
   
   page.drawText(titleText, {
     x: (pageWidth - titleWidth) / 2,
@@ -630,7 +625,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
     const maxTitleWidth = col2Width - 20;
     const titleSize = formatting.fontSize || 12;
     
-    while ((font as any).widthOfTextAtSize(titleText, titleSize) > maxTitleWidth && titleText.length > 3) {
+    while ((font as PDFFont).widthOfTextAtSize(titleText, titleSize) > maxTitleWidth && titleText.length > 3) {
       titleText = titleText.slice(0, -4) + '...';
     }
     

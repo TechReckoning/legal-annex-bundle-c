@@ -35,7 +35,6 @@ export const LogoUploader: React.FC<LogoUploaderProps> = ({
       return () => URL.revokeObjectURL(url);
     } else {
       setLogoPreview(null);
-      return;
     }
   }, [formatting.logoFile]);
 

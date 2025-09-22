@@ -2,7 +2,6 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AnnexItem, FormattingOptions } from '@/types';
 import { getDisplayTitle } from '@/lib/utils';
-import { generateCoverPageHTML, generateOpisHTML } from '@/lib/pdf-generator';
 
 interface PreviewPanelProps {
   selectedAnnex: AnnexItem | null;

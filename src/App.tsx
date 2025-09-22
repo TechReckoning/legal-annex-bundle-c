@@ -10,7 +10,6 @@ import { Download, FloppyDisk, ArrowUp, ArrowDown, Trash, FolderPlus } from '@ph
 import { AnnexItem, ProjectModel, FormattingOptions, defaultFormattingOptions, defaultCoverFormattingOptions, colorThemes } from '@/types';
 import { 
   generateId, 
-  generateAutoTitle, 
   updateAnnexNumbers, 
   getDisplayTitle 
 } from '@/lib/utils';
@@ -23,8 +22,6 @@ import {
   reorderAnnexes 
 } from '@/lib/project';
 import { 
-  generateCoverPageHTML, 
-  generateOpisHTML,
   exportToPDF
 } from '@/lib/pdf-generator';
 
@@ -36,7 +33,7 @@ import { DocumentManager } from '@/components/DocumentManager';
 import { MultiDocumentInfo } from '@/components/InfoTooltip';
 import { BundleStats } from '@/components/BundleStats';
 
-function App(): React.JSX.Element {
+function App(): React.ReactElement {
   const [annexes, setAnnexes] = useKV<AnnexItem[]>('annexes', []);
   const [opisFormatting, setOpisFormatting] = useKV<FormattingOptions>('opisFormatting', defaultFormattingOptions);
   const [coverFormatting, setCoverFormatting] = useKV<FormattingOptions>('coverFormatting', defaultCoverFormattingOptions);

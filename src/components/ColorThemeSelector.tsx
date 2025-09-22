@@ -28,8 +28,8 @@ export const ColorThemeSelector: React.FC<ColorThemeSelectorProps> = ({
     });
   };
 
-  const handleCustomColorToggle = (checked: boolean) => {
-    onFormattingChange({ useCustomColors: checked });
+  const handleCustomColorToggle = (checked: boolean | 'indeterminate') => {
+    onFormattingChange({ useCustomColors: !!checked });
   };
 
   const handleCustomColorChange = (field: keyof ColorTheme, value: string) => {

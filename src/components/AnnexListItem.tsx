@@ -34,7 +34,7 @@ export const AnnexListItem: React.FC<AnnexListItemProps> = ({
     setIsEditing(false);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleTitleSubmit();
     } else if (e.key === 'Escape') {
