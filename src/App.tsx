@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { Download, FloppyDisk, ArrowUp, ArrowDown, Trash, FolderPlus } from '@phosphor-icons/react';
+import caseslibLogo from '@/assets/images/caselib-logo.svg';
 
 import { AnnexItem, ProjectModel, FormattingOptions, defaultFormattingOptions, defaultCoverFormattingOptions, colorThemes } from '@/types';
 import { 
@@ -235,11 +236,18 @@ function App() {
       <header className="border-b bg-card">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Caselib Bundle</h1>
-              <p className="text-sm text-muted-foreground">
-                Anexe pregătite profesionist și eficient - Organizați multiple documente PDF în anexe structurate
-              </p>
+            <div className="flex items-center gap-4">
+              <img 
+                src={caseslibLogo} 
+                alt="Caselib Logo" 
+                className="h-10 w-auto"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Bundle</h1>
+                <p className="text-sm text-muted-foreground">
+                  Anexe pregătite profesionist și eficient - Organizați multiple documente PDF în anexe structurate
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" onClick={handleSaveProject}>
