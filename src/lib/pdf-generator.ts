@@ -415,7 +415,7 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
   
   // Draw heading
   const headingSize = formatting.headingFontSize || 28;
-  const headingWidth = boldFont.widthOfTextAtSize(headingText, headingSize);
+  const headingWidth = (boldFont as any).widthOfTextAtSize(headingText, headingSize);
   
   page.drawText(headingText, {
     x: centerX - (headingWidth / 2),
@@ -437,7 +437,7 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
   
   for (const word of words) {
     const testLine = currentLine ? `${currentLine} ${word}` : word;
-    const testWidth = titleFont.widthOfTextAtSize(testLine, titleSize);
+    const testWidth = (titleFont as any).widthOfTextAtSize(testLine, titleSize);
     
     if (testWidth <= maxWidth) {
       currentLine = testLine;
@@ -461,7 +461,7 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
   let startY = contentStartY - 30 - (totalTitleHeight / 2);
   
   for (const line of lines) {
-    const lineWidth = titleFont.widthOfTextAtSize(line, titleSize);
+    const lineWidth = (titleFont as any).widthOfTextAtSize(line, titleSize);
     page.drawText(line, {
       x: centerX - (lineWidth / 2),
       y: startY,
@@ -524,7 +524,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
   // Title
   const titleText = 'OPIS';
   const titleSize = (formatting.fontSize || 12) * 1.5;
-  const titleWidth = boldFont.widthOfTextAtSize(titleText, titleSize);
+  const titleWidth = (boldFont as any).widthOfTextAtSize(titleText, titleSize);
   
   page.drawText(titleText, {
     x: (pageWidth - titleWidth) / 2,
@@ -630,7 +630,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
     const maxTitleWidth = col2Width - 20;
     const titleSize = formatting.fontSize || 12;
     
-    while (font.widthOfTextAtSize(titleText, titleSize) > maxTitleWidth && titleText.length > 3) {
+    while ((font as any).widthOfTextAtSize(titleText, titleSize) > maxTitleWidth && titleText.length > 3) {
       titleText = titleText.slice(0, -4) + '...';
     }
     
@@ -690,8 +690,8 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
     try {
       const opisPDFBytes = await createOpisPDF(opisConfig);
       const opisPDF = await PDFDocument.load(opisPDFBytes);
-      const opisPages = await finalPDF.copyPages(opisPDF, opisPDF.getPageIndices());
-      opisPages.forEach((page) => finalPDF.addPage(page));
+      const opisPages = await (finalPDF as any).copyPages(opisPDF, (opisPDF as any).getPageIndices());
+      opisPages.forEach((page: any) => finalPDF.addPage(page));
     } catch (error) {
       console.error('Error creating Opis:', error);
       throw new Error('Eroare la crearea cuprinsului (Opis)');
@@ -711,8 +711,8 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
         
         const coverPDFBytes = await createCoverPagePDF(coverConfig);
         const coverPDF = await PDFDocument.load(coverPDFBytes);
-        const coverPages = await finalPDF.copyPages(coverPDF, coverPDF.getPageIndices());
-        coverPages.forEach((page) => finalPDF.addPage(page));
+        const coverPages = await (finalPDF as any).copyPages(coverPDF, (coverPDF as any).getPageIndices());
+        coverPages.forEach((page: any) => finalPDF.addPage(page));
         
         // Add all documents in this annex
         const documents = annex.documents || [];
@@ -748,7 +748,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
               });
               
               // Draw a decorative line
-              separatorPage.drawLine({
+              (separatorPage as any).drawLine({
                 start: { x: 50, y: 700 },
                 end: { x: 545, y: 700 },
                 thickness: 1,
@@ -775,8 +775,8 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
             try {
               const originalPDFBytes = await readPDFAsUint8Array(document.file);
               const originalPDF = await PDFDocument.load(originalPDFBytes);
-              const originalPages = await finalPDF.copyPages(originalPDF, originalPDF.getPageIndices());
-              originalPages.forEach((page) => finalPDF.addPage(page));
+              const originalPages = await (finalPDF as any).copyPages(originalPDF, (originalPDF as any).getPageIndices());
+              originalPages.forEach((page: any) => finalPDF.addPage(page));
               
             } catch (pdfError) {
               console.warn(`Could not process PDF file "${document.file.name}":`, pdfError);
@@ -860,7 +860,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
     }
     
     // Check if we have any pages in the final PDF
-    if (finalPDF.getPageCount() === 0) {
+    if ((finalPDF as any).getPageCount() === 0) {
       throw new Error('Nu s-au putut genera pagini pentru PDF');
     }
     
