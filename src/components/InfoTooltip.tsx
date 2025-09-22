@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Info, Files, FileText, Download } from '@phosphor-icons/react';
+import { Info, Files, FileText, Download, HardDrive } from '@phosphor-icons/react';
 
 export const MultiDocumentInfo: React.FC = () => {
   return (
@@ -10,7 +10,7 @@ export const MultiDocumentInfo: React.FC = () => {
           <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div className="space-y-2">
             <h4 className="text-sm font-semibold text-blue-900">
-              Funcționalitate Documente Multiple
+              Informații Importante
             </h4>
             <div className="text-xs text-blue-800 space-y-1">
               <div className="flex items-center gap-2">
@@ -24,6 +24,10 @@ export const MultiDocumentInfo: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Download className="w-3 h-3" />
                 <span>La export: Opis → Anexa 1 (Copertă + Doc1 + Doc2...) → Anexa 2...</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <HardDrive className="w-3 h-3" />
+                <span>PDF-urile sunt stocate temporar în browser până la export (nu pe disc)</span>
               </div>
             </div>
           </div>
