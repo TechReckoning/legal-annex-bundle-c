@@ -1,7 +1,6 @@
 import { FormattingOptions, AnnexItem } from '@/types';
 import { getDisplayTitle } from '@/lib/utils';
-import * as pdfLib from 'pdf-lib';
-const { PDFDocument, rgb, StandardFonts, PDFFont } = pdfLib;
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import html2canvas from 'html2canvas';
 
 // Helper function for color parsing (used in multiple places)

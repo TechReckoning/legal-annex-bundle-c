@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { Download, FloppyDisk, ArrowUp, ArrowDown, Trash, FolderPlus } from '@phosphor-icons/react';
 
-import { AnnexItem, ProjectModel, FormattingOptions, defaultFormattingOptions, defaultCoverFormattingOptions, colorThemes } from '@/types';
+import { AnnexItem, ProjectModel, FormattingOptions, defaultFormattingOptions, defaultCoverFormattingOptions } from '@/types';
 import { 
   generateId, 
   updateAnnexNumbers, 
@@ -35,8 +35,8 @@ import { BundleStats } from '@/components/BundleStats';
 
 function App(): React.ReactElement {
   const [annexes, setAnnexes] = useKV<AnnexItem[]>('annexes', []);
-  const [opisFormatting, setOpisFormatting] = useKV<FormattingOptions>('opisFormatting', { ...defaultFormattingOptions });
-  const [coverFormatting, setCoverFormatting] = useKV<FormattingOptions>('coverFormatting', { ...defaultCoverFormattingOptions });
+  const [opisFormatting, setOpisFormatting] = useKV<FormattingOptions>('opisFormatting', defaultFormattingOptions);
+  const [coverFormatting, setCoverFormatting] = useKV<FormattingOptions>('coverFormatting', defaultCoverFormattingOptions);
   const [selectedAnnexId, setSelectedAnnexId] = React.useState<string | null>(null);
 
   // Ensure annexes is always an array and handle potential storage issues
@@ -54,24 +54,24 @@ function App(): React.ReactElement {
   const safeOpisFormatting = React.useMemo(() => {
     try {
       if (!opisFormatting || typeof opisFormatting !== 'object') {
-        return { ...defaultFormattingOptions };
+        return defaultFormattingOptions;
       }
       return { ...defaultFormattingOptions, ...opisFormatting };
     } catch (error) {
       console.warn('Error accessing opis formatting:', error);
-      return { ...defaultFormattingOptions };
+      return defaultFormattingOptions;
     }
   }, [opisFormatting]);
 
   const safeCoverFormatting = React.useMemo(() => {
     try {
       if (!coverFormatting || typeof coverFormatting !== 'object') {
-        return { ...defaultCoverFormattingOptions };
+        return defaultCoverFormattingOptions;
       }
       return { ...defaultCoverFormattingOptions, ...coverFormatting };
     } catch (error) {
       console.warn('Error accessing cover formatting:', error);
-      return { ...defaultCoverFormattingOptions };
+      return defaultCoverFormattingOptions;
     }
   }, [coverFormatting]);
 
@@ -134,9 +134,13 @@ function App(): React.ReactElement {
       }
       if (projectData.opisFormatting && typeof projectData.opisFormatting === 'object') {
         setOpisFormatting({ ...defaultFormattingOptions, ...projectData.opisFormatting });
+      } else {
+        setOpisFormatting(defaultFormattingOptions);
       }
       if (projectData.coverFormatting && typeof projectData.coverFormatting === 'object') {
         setCoverFormatting({ ...defaultCoverFormattingOptions, ...projectData.coverFormatting });
+      } else {
+        setCoverFormatting(defaultCoverFormattingOptions);
       }
       
       toast.success('Proiect încărcat cu succes');
@@ -380,17 +384,8 @@ function App(): React.ReactElement {
 
   const handleResetFormatting = React.useCallback(() => {
     try {
-      const resetOpisFormatting = {
-        ...defaultFormattingOptions,
-        colorTheme: colorThemes[0]
-      };
-      const resetCoverFormatting = {
-        ...defaultCoverFormattingOptions,
-        colorTheme: colorThemes[0]
-      };
-      
-      setOpisFormatting(resetOpisFormatting);
-      setCoverFormatting(resetCoverFormatting);
+      setOpisFormatting(defaultFormattingOptions);
+      setCoverFormatting(defaultCoverFormattingOptions);
       toast.success('Formatarea resetată la valorile implicite');
     } catch (error) {
       console.error('Error resetting formatting:', error);
