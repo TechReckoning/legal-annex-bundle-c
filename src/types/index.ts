@@ -1,10 +1,15 @@
+export interface DocumentItem {
+  id: string;
+  sourceFilePath: string;
+  autoTitle: string;
+  file?: File;
+}
+
 export interface AnnexItem {
   id: string;
   annexNumber: number;
-  sourceFilePath: string;
-  autoTitle: string;
   userTitle?: string;
-  file?: File;
+  documents: DocumentItem[];
 }
 
 export interface FormattingOptions {

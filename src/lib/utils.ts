@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { AnnexItem } from '@/types';
+import { AnnexItem, DocumentItem } from '@/types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -11,7 +11,11 @@ export const generateId = (): string => {
 };
 
 export const getDisplayTitle = (annex: AnnexItem): string => {
-  return annex.userTitle || annex.autoTitle;
+  if (annex.userTitle) return annex.userTitle;
+  if (annex.documents.length === 1) {
+    return annex.documents[0].autoTitle;
+  }
+  return `Anexa ${annex.annexNumber} (${annex.documents.length} documente)`;
 };
 
 export const generateAutoTitle = (filename: string): string => {

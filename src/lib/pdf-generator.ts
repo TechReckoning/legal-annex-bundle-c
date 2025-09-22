@@ -1,4 +1,5 @@
 import { FormattingOptions, AnnexItem } from '@/types';
+import { getDisplayTitle } from '@/lib/utils';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import html2canvas from 'html2canvas';
 
@@ -503,7 +504,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
     const opisConfig: OpisTableConfig = {
       annexes: annexes.map(annex => ({
         number: annex.annexNumber,
-        title: annex.userTitle || annex.autoTitle
+        title: getDisplayTitle(annex)
       })),
       formatting: opisFormatting
     };
@@ -518,7 +519,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
       // Generate and add cover page
       const coverConfig: CoverPageConfig = {
         annexNumber: annex.annexNumber,
-        title: annex.userTitle || annex.autoTitle,
+        title: getDisplayTitle(annex),
         formatting: coverFormatting
       };
       
@@ -528,35 +529,37 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
         const coverPages = await finalPDF.copyPages(coverPDF, coverPDF.getPageIndices());
         coverPages.forEach((page) => finalPDF.addPage(page));
         
-        // Add original PDF pages if file exists
-        if (annex.file) {
-          try {
-            const originalPDFBytes = await readPDFAsUint8Array(annex.file);
-            const originalPDF = await PDFDocument.load(originalPDFBytes);
-            const originalPages = await finalPDF.copyPages(originalPDF, originalPDF.getPageIndices());
-            originalPages.forEach((page) => finalPDF.addPage(page));
-            
-          } catch (pdfError) {
-            console.warn('Could not process PDF file:', pdfError);
-            // Add error page
-            const errorPage = finalPDF.addPage([595.28, 841.89]);
-            const font = await finalPDF.embedFont(StandardFonts.Helvetica);
-            
-            errorPage.drawText('Error loading original PDF:', {
-              x: 50,
-              y: 750,
-              size: 12,
-              font: font,
-              color: rgb(0.8, 0, 0),
-            });
-            
-            errorPage.drawText(annex.file.name, {
-              x: 50,
-              y: 720,
-              size: 10,
-              font: font,
-              color: rgb(0.3, 0.3, 0.3),
-            });
+        // Add all documents in this annex
+        for (const document of annex.documents) {
+          if (document.file) {
+            try {
+              const originalPDFBytes = await readPDFAsUint8Array(document.file);
+              const originalPDF = await PDFDocument.load(originalPDFBytes);
+              const originalPages = await finalPDF.copyPages(originalPDF, originalPDF.getPageIndices());
+              originalPages.forEach((page) => finalPDF.addPage(page));
+              
+            } catch (pdfError) {
+              console.warn('Could not process PDF file:', pdfError);
+              // Add error page for this document
+              const errorPage = finalPDF.addPage([595.28, 841.89]);
+              const font = await finalPDF.embedFont(StandardFonts.Helvetica);
+              
+              errorPage.drawText('Error loading PDF document:', {
+                x: 50,
+                y: 750,
+                size: 12,
+                font: font,
+                color: rgb(0.8, 0, 0),
+              });
+              
+              errorPage.drawText(document.file.name, {
+                x: 50,
+                y: 720,
+                size: 10,
+                font: font,
+                color: rgb(0.3, 0.3, 0.3),
+              });
+            }
           }
         }
         
@@ -574,7 +577,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
           color: rgb(0.8, 0, 0),
         });
         
-        errorPage.drawText(annex.userTitle || annex.autoTitle, {
+        errorPage.drawText(getDisplayTitle(annex), {
           x: 50,
           y: 720,
           size: 10,

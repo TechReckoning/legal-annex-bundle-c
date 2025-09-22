@@ -98,9 +98,29 @@ export const AnnexListItem: React.FC<AnnexListItemProps> = ({
                 </Button>
               )}
             </div>
-            <div className="text-xs text-muted-foreground">
-              {truncateFilePath(annex.sourceFilePath)}
-              {annex.file && ` • ${formatBytes(annex.file.size)}`}
+            <div className="text-xs text-muted-foreground space-y-1">
+              {annex.documents.length === 1 ? (
+                <div>
+                  {truncateFilePath(annex.documents[0].sourceFilePath)}
+                  {annex.documents[0].file && ` • ${formatBytes(annex.documents[0].file.size)}`}
+                </div>
+              ) : (
+                <div>
+                  {annex.documents.length} documente în această anexă
+                  <div className="mt-1 space-y-0.5">
+                    {annex.documents.slice(0, 2).map((doc, index) => (
+                      <div key={doc.id} className="text-xs">
+                        {index + 1}. {truncateFilePath(doc.sourceFilePath, 25)}
+                      </div>
+                    ))}
+                    {annex.documents.length > 2 && (
+                      <div className="text-xs italic">
+                        și încă {annex.documents.length - 2} documente...
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           

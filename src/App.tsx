@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Download, FloppyDisk, ArrowUp, ArrowDown, Trash } from '@phosphor-icons/react';
+import { Download, FloppyDisk, ArrowUp, ArrowDown, Trash, FolderPlus } from '@phosphor-icons/react';
 
 import { AnnexItem, ProjectModel, FormattingOptions, defaultFormattingOptions, defaultCoverFormattingOptions } from '@/types';
 import { 
@@ -16,6 +16,8 @@ import {
 } from '@/lib/utils';
 import { 
   createAnnexFromFile, 
+  addDocumentToAnnex,
+  removeDocumentFromAnnex,
   saveProject, 
   loadProject,
   reorderAnnexes 
@@ -30,6 +32,7 @@ import { FileUploader } from '@/components/FileUploader';
 import { AnnexListItem } from '@/components/AnnexListItem';
 import { PreviewPanel } from '@/components/PreviewPanel';
 import { FormattingPanel } from '@/components/FormattingPanel';
+import { DocumentManager } from '@/components/DocumentManager';
 
 function App() {
   const [annexes, setAnnexes] = useKV<AnnexItem[]>('annexes', []);
@@ -137,11 +140,18 @@ function App() {
       return;
     }
 
+    // Check if any annex has documents
+    const annexesWithDocuments = annexes.filter(annex => annex.documents.length > 0);
+    if (annexesWithDocuments.length === 0) {
+      toast.error('Nu există documente în anexe pentru export');
+      return;
+    }
+
     try {
       toast.info('Se generează PDF-ul...');
       
       await exportToPDF({
-        annexes: annexes,
+        annexes: annexesWithDocuments, // Only export annexes with documents
         opisFormatting: opisFormatting || defaultFormattingOptions,
         coverFormatting: coverFormatting || defaultCoverFormattingOptions,
       });
@@ -153,6 +163,52 @@ function App() {
     }
   };
 
+  const handleAddDocument = (annexId: string, file: File) => {
+    setAnnexes(currentAnnexes => 
+      (currentAnnexes || []).map(annex => 
+        annex.id === annexId 
+          ? addDocumentToAnnex(annex, file)
+          : annex
+      )
+    );
+    
+    toast.success('Document adăugat în anexă');
+  };
+
+  const handleRemoveDocument = (annexId: string, documentId: string) => {
+    setAnnexes(currentAnnexes => 
+      (currentAnnexes || []).map(annex => 
+        annex.id === annexId 
+          ? removeDocumentFromAnnex(annex, documentId)
+          : annex
+      ).filter(annex => annex.documents.length > 0) // Remove empty annexes
+    );
+    
+    // If the current annex becomes empty, clear selection
+    const updatedAnnex = (annexes || []).find(a => a.id === annexId);
+    if (updatedAnnex && updatedAnnex.documents.length === 1) { // Will become 0 after removal
+      setSelectedAnnexId(null);
+    }
+    
+    toast.success('Document eliminat din anexă');
+  };
+
+  const handleCreateNewAnnex = () => {
+    const newAnnex: AnnexItem = {
+      id: generateId(),
+      annexNumber: 0,
+      documents: [],
+    };
+    
+    setAnnexes(currentAnnexes => {
+      const combined = [...(currentAnnexes || []), newAnnex];
+      return updateAnnexNumbers(combined);
+    });
+    
+    setSelectedAnnexId(newAnnex.id);
+    toast.success('Anexă nouă creată');
+  };
+
   const handleResetFormatting = () => {
     setOpisFormatting(defaultFormattingOptions);
     setCoverFormatting(defaultCoverFormattingOptions);
@@ -160,6 +216,7 @@ function App() {
   };
 
   const safeAnnexes = annexes || [];
+  const annexesWithDocuments = safeAnnexes.filter(annex => annex.documents.length > 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -177,7 +234,7 @@ function App() {
                 <FloppyDisk className="w-4 h-4 mr-2" />
                 Salvează proiect
               </Button>
-              <Button onClick={handleExportPDF} disabled={safeAnnexes.length === 0}>
+              <Button onClick={handleExportPDF} disabled={annexesWithDocuments.length === 0}>
                 <Download className="w-4 h-4 mr-2" />
                 Exportă PDF
               </Button>
@@ -192,7 +249,12 @@ function App() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>Anexe ({safeAnnexes.length})</span>
+                  <span>
+                    Anexe ({safeAnnexes.length}
+                    {annexesWithDocuments.length !== safeAnnexes.length && 
+                      `, ${annexesWithDocuments.length} cu documente`
+                    })
+                  </span>
                   <div className="flex gap-2">
                     {selectedAnnexId && (
                       <>
@@ -229,6 +291,15 @@ function App() {
                   onFilesSelected={handleFilesSelected}
                   onLoadProject={handleLoadProject}
                 />
+                
+                <Button
+                  variant="outline"
+                  onClick={handleCreateNewAnnex}
+                  className="w-full"
+                >
+                  <FolderPlus className="w-4 h-4 mr-2" />
+                  Creează anexă nouă
+                </Button>
                 
                 {safeAnnexes.length > 0 && (
                   <>
@@ -267,6 +338,14 @@ function App() {
                   opisFormatting={opisFormatting || defaultFormattingOptions}
                   coverFormatting={coverFormatting || defaultCoverFormattingOptions}
                 />
+                
+                {selectedAnnex && (
+                  <DocumentManager
+                    annex={selectedAnnex}
+                    onAddDocument={handleAddDocument}
+                    onRemoveDocument={handleRemoveDocument}
+                  />
+                )}
               </TabsContent>
               
               <TabsContent value="formatting" className="space-y-4">

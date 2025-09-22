@@ -1,20 +1,46 @@
-import { AnnexItem, ProjectModel, defaultFormattingOptions, defaultCoverFormattingOptions } from '@/types';
+import { AnnexItem, DocumentItem, ProjectModel, defaultFormattingOptions, defaultCoverFormattingOptions } from '@/types';
 import { generateId, generateAutoTitle, updateAnnexNumbers } from '@/lib/utils';
 
-export const createAnnexFromFile = (file: File): AnnexItem => {
+export const createDocumentFromFile = (file: File): DocumentItem => {
   return {
     id: generateId(),
-    annexNumber: 0,
     sourceFilePath: file.name,
     autoTitle: generateAutoTitle(file.name),
     file,
   };
 };
 
+export const createAnnexFromFile = (file: File): AnnexItem => {
+  const document = createDocumentFromFile(file);
+  return {
+    id: generateId(),
+    annexNumber: 0,
+    documents: [document],
+  };
+};
+
+export const addDocumentToAnnex = (annex: AnnexItem, file: File): AnnexItem => {
+  const document = createDocumentFromFile(file);
+  return {
+    ...annex,
+    documents: [...annex.documents, document],
+  };
+};
+
+export const removeDocumentFromAnnex = (annex: AnnexItem, documentId: string): AnnexItem => {
+  return {
+    ...annex,
+    documents: annex.documents.filter(doc => doc.id !== documentId),
+  };
+};
+
 export const saveProject = (project: ProjectModel): void => {
   const projectData = {
     ...project,
-    annexes: project.annexes.map(({ file, ...annex }) => annex), // Remove file objects for serialization
+    annexes: project.annexes.map(annex => ({
+      ...annex,
+      documents: annex.documents.map(({ file, ...doc }) => doc) // Remove file objects for serialization
+    })),
   };
   
   const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
