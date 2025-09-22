@@ -34,9 +34,14 @@
 ## Essential Features
 
 ### PDF Management System
-- **Functionality**: Drag & drop upload, file organization, reordering
-- **Purpose**: Eliminate manual file handling and organization errors
-- **Success Criteria**: Support 50+ files, instant reordering, persistent state
+- **Functionality**: Drag & drop upload, file organization, reordering, multiple documents per annex
+- **Purpose**: Eliminate manual file handling and organization errors while supporting comprehensive legal bundles
+- **Success Criteria**: Support 50+ files, instant reordering, persistent state, multi-document annexes
+
+### Multi-Document Annex Support
+- **Functionality**: Allow multiple PDF documents within a single annex for comprehensive legal bundles
+- **Purpose**: Enable complex legal submissions where one logical annex contains multiple related documents
+- **Success Criteria**: Drag & drop into existing annexes, clear visual indicators, proper PDF sequencing
 
 ### Automated Cover Page Generation
 - **Functionality**: Generate professional "ANEXA X" cover pages with customizable formatting

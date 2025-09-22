@@ -702,7 +702,41 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
         coverPages.forEach((page) => finalPDF.addPage(page));
         
         // Add all documents in this annex
-        for (const document of annex.documents || []) {
+        for (let docIndex = 0; docIndex < (annex.documents || []).length; docIndex++) {
+          const document = annex.documents![docIndex];
+          
+          // Add a document separator page if there are multiple documents and this isn't the first one
+          if (docIndex > 0 && annex.documents!.length > 1) {
+            const separatorPage = finalPDF.addPage([595.28, 841.89]);
+            const font = await finalPDF.embedFont(StandardFonts.Helvetica);
+            const boldFont = await finalPDF.embedFont(StandardFonts.HelveticaBold);
+            
+            // Draw separator info
+            separatorPage.drawText(`ANEXA ${annex.annexNumber} - DOCUMENT ${docIndex + 1}`, {
+              x: 50,
+              y: 750,
+              size: 16,
+              font: boldFont,
+              color: rgb(0.3, 0.3, 0.3),
+            });
+            
+            separatorPage.drawText(document.autoTitle, {
+              x: 50,
+              y: 720,
+              size: 12,
+              font: font,
+              color: rgb(0.5, 0.5, 0.5),
+            });
+            
+            // Draw a decorative line
+            separatorPage.drawLine({
+              start: { x: 50, y: 700 },
+              end: { x: 545, y: 700 },
+              thickness: 1,
+              color: rgb(0.8, 0.8, 0.8),
+            });
+          }
+          
           if (document.file) {
             try {
               const originalPDFBytes = await readPDFAsUint8Array(document.file);

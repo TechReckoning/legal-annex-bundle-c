@@ -88,6 +88,9 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
               <p className="text-sm text-muted-foreground mt-1">
                 Trageți și plasați fișierele aici sau faceți clic pentru a selecta
               </p>
+              <p className="text-xs text-muted-foreground mt-1 italic">
+                Fiecare fișier va crea o anexă nouă cu un singur document
+              </p>
             </div>
           </div>
         </CardContent>

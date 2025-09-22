@@ -100,29 +100,45 @@ export const AnnexListItem: React.FC<AnnexListItemProps> = ({
             </div>
             <div className="text-xs text-muted-foreground space-y-1">
               {annex.documents && annex.documents.length === 1 ? (
-                <div>
-                  {truncateFilePath(annex.documents[0].sourceFilePath)}
-                  {annex.documents[0].file && ` • ${formatBytes(annex.documents[0].file.size)}`}
+                <div className="flex items-center gap-1">
+                  <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">
+                    1 doc
+                  </span>
+                  <span>
+                    {truncateFilePath(annex.documents[0].sourceFilePath, 25)}
+                    {annex.documents[0].file && ` • ${formatBytes(annex.documents[0].file.size)}`}
+                  </span>
                 </div>
               ) : annex.documents && annex.documents.length > 1 ? (
                 <div>
-                  {annex.documents.length} documente în această anexă
-                  <div className="mt-1 space-y-0.5">
+                  <div className="flex items-center gap-1 mb-1">
+                    <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">
+                      {annex.documents.length} docs
+                    </span>
+                    <span className="text-xs">Bundle complet</span>
+                  </div>
+                  <div className="mt-1 space-y-0.5 ml-1">
                     {annex.documents.slice(0, 2).map((doc, index) => (
-                      <div key={doc.id} className="text-xs">
-                        {index + 1}. {truncateFilePath(doc.sourceFilePath, 25)}
+                      <div key={doc.id} className="text-xs flex items-center gap-1">
+                        <span className="w-4 text-center text-muted-foreground/60">
+                          {index + 1}.
+                        </span>
+                        <span>{truncateFilePath(doc.sourceFilePath, 25)}</span>
                       </div>
                     ))}
                     {annex.documents.length > 2 && (
-                      <div className="text-xs italic">
+                      <div className="text-xs italic text-muted-foreground/80 ml-5">
                         și încă {annex.documents.length - 2} documente...
                       </div>
                     )}
                   </div>
                 </div>
               ) : (
-                <div className="text-muted-foreground italic">
-                  Anexă fără documente
+                <div className="flex items-center gap-1 text-muted-foreground/60 italic">
+                  <span className="text-xs bg-muted/50 px-1.5 py-0.5 rounded">
+                    0 docs
+                  </span>
+                  <span className="text-xs">Anexă goală</span>
                 </div>
               )}
             </div>

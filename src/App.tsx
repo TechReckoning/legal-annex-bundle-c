@@ -33,6 +33,8 @@ import { AnnexListItem } from '@/components/AnnexListItem';
 import { PreviewPanel } from '@/components/PreviewPanel';
 import { FormattingPanel } from '@/components/FormattingPanel';
 import { DocumentManager } from '@/components/DocumentManager';
+import { MultiDocumentInfo } from '@/components/InfoTooltip';
+import { BundleStats } from '@/components/BundleStats';
 
 function App() {
   const [annexes, setAnnexes] = useKV<AnnexItem[]>('annexes', []);
@@ -232,7 +234,7 @@ function App() {
             <div>
               <h1 className="text-2xl font-bold text-foreground">Caselib Bundle</h1>
               <p className="text-sm text-muted-foreground">
-                Anexe pregătite profesionist și eficient
+                Anexe pregătite profesionist și eficient - Organizați multiple documente PDF în anexe structurate
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -252,15 +254,23 @@ function App() {
       <main className="container mx-auto px-6 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-6">
+            <BundleStats annexes={safeAnnexes} />
+            <MultiDocumentInfo />
+            
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>
-                    Anexe ({safeAnnexes.length}
-                    {annexesWithDocuments.length !== safeAnnexes.length && 
-                      `, ${annexesWithDocuments.length} cu documente`
-                    })
-                  </span>
+                  <div className="flex flex-col">
+                    <span>
+                      Anexe ({safeAnnexes.length}
+                      {annexesWithDocuments.length !== safeAnnexes.length && 
+                        `, ${annexesWithDocuments.length} cu documente`
+                      })
+                    </span>
+                    <span className="text-xs font-normal text-muted-foreground mt-1">
+                      Fiecare anexă poate conține multiple documente PDF
+                    </span>
+                  </div>
                   <div className="flex gap-2">
                     {selectedAnnexId && (
                       <>
