@@ -681,17 +681,19 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
       color: textColor,
     });
     
-    // Truncate long titles
+    // Truncate only very long titles (5x column width)
     let titleText = annex.title;
     const maxTitleWidth = col2Width - 20;
     const titleSize = formatting.fontSize || 12;
     
-    // Process the text first, then truncate if needed
-    let processedTitleText = processTextForPDF(titleText);
+    // Only truncate if text is longer than 5 times the column width
+    const maxCharacterLength = Math.floor(maxTitleWidth / (titleSize * 0.6)) * 5; // Rough estimate: 5x column width
     
-    while ((font as any).widthOfTextAtSize(processedTitleText, titleSize) > maxTitleWidth && processedTitleText.length > 3) {
-      processedTitleText = processedTitleText.slice(0, -4) + '...';
+    if (titleText.length > maxCharacterLength) {
+      titleText = titleText.slice(0, maxCharacterLength - 3) + '...';
     }
+    
+    const processedTitleText = processTextForPDF(titleText);
     page.drawText(processedTitleText, {
       x: tableStartX + col1Width + 10,
       y: currentY + 8,
