@@ -686,11 +686,12 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
     const maxTitleWidth = col2Width - 20;
     const titleSize = formatting.fontSize || 12;
     
-    while ((font as any).widthOfTextAtSize(processTextForPDF(titleText), titleSize) > maxTitleWidth && titleText.length > 3) {
-      titleText = titleText.slice(0, -4) + '...';
-    }
+    // Process the text first, then truncate if needed
+    let processedTitleText = processTextForPDF(titleText);
     
-    const processedTitleText = processTextForPDF(titleText);
+    while ((font as any).widthOfTextAtSize(processedTitleText, titleSize) > maxTitleWidth && processedTitleText.length > 3) {
+      processedTitleText = processedTitleText.slice(0, -4) + '...';
+    }
     page.drawText(processedTitleText, {
       x: tableStartX + col1Width + 10,
       y: currentY + 8,

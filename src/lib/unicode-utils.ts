@@ -11,21 +11,25 @@ export function transliterateRomanian(text: string): string {
     'î': 'i',
     'ș': 's',
     'ț': 't',
+    'ş': 's', // Old Romanian character variant
+    'ţ': 't', // Old Romanian character variant
     'Ă': 'A',
     'Â': 'A',
     'Î': 'I', 
     'Ș': 'S',
-    'Ț': 'T'
+    'Ț': 'T',
+    'Ş': 'S', // Old Romanian character variant
+    'Ţ': 'T'  // Old Romanian character variant
   };
 
-  return text.replace(/[ăâîșțĂÂÎȘȚ]/g, (char) => transliterationMap[char] || char);
+  return text.replace(/[ăâîșțşţĂÂÎȘȚŞŢ]/g, (char) => transliterationMap[char] || char);
 }
 
 /**
  * Checks if a string contains Romanian characters
  */
 export function hasRomanianCharacters(text: string): boolean {
-  return /[ăâîșțĂÂÎȘȚ]/.test(text);
+  return /[ăâîșțşţĂÂÎȘȚŞŢ]/.test(text);
 }
 
 /**
