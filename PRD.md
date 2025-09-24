@@ -40,7 +40,7 @@ The application manages document collections with reordering, formatting, and ex
 - **Progression**: Format change → immediate preview update → export includes updated covers
 - **Success criteria**: Cover pages display correct numbering and formatting, update live with changes
 
-### Table of Contents (Opis) Generation
+### Table of Contents (Lista Anexelor) Generation
 - **Functionality**: Auto-generates professional table of contents with annex numbers and descriptions
 - **Purpose**: Provides navigation overview for the complete document bundle
 - **Trigger**: Automatic generation based on current annex list and order

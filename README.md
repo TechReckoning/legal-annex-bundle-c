@@ -13,7 +13,7 @@ A modern web application for preparing legal annex bundles (Romanian: dosare ane
 
 ### Document Generation
 - **Cover Page Generation**: Auto-generate professional cover pages for each annex
-- **Table of Contents (Opis)**: Auto-generate comprehensive table of contents
+- **Table of Contents (Lista Anexelor)**: Auto-generate comprehensive table of contents
 - **PDF Export**: Merge all documents into a single, properly ordered PDF bundle
 
 ### Customization
@@ -41,7 +41,7 @@ A modern web application for preparing legal annex bundles (Romanian: dosare ane
 
 The export generates a complete legal bundle:
 
-1. **Table of Contents (Opis)**: Lists all annexes with descriptions
+1. **Table of Contents (Lista Anexelor)**: Lists all annexes with descriptions
 2. **For each annex**:
    - Professional cover page with "ANEXA X" heading and title
    - Complete original PDF content

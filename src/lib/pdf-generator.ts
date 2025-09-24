@@ -228,7 +228,7 @@ export const generateOpisHTML = (config: OpisTableConfig): string => {
       </style>
     </head>
     <body>
-      <div class="title">OPIS</div>
+      <div class="title">LISTA ANEXELOR</div>
       <table>
         <thead>
           <tr>
@@ -576,7 +576,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
   }
   
   // Title
-  const titleText = 'OPIS';
+  const titleText = 'LISTA ANEXELOR';
   const processedTitleText = processTextForPDF(titleText);
   const titleSize = (formatting.fontSize || 12) * 1.5;
   const titleWidth = (boldFont as any).widthOfTextAtSize(processedTitleText, titleSize);
@@ -591,7 +591,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
   
   // Table
   const tableStartY = pageHeight - margin - 100;
-  const rowHeight = 25;
+  const baseRowHeight = 25;
   const col1Width = pageWidth * 0.3;
   const col2Width = pageWidth * 0.6;
   const tableWidth = col1Width + col2Width;
@@ -603,27 +603,27 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
   // Header background
   page.drawRectangle({
     x: tableStartX,
-    y: headerY - rowHeight,
+    y: headerY - baseRowHeight,
     width: tableWidth,
-    height: rowHeight,
+    height: baseRowHeight,
     color: accentColor,
   });
   
   // Header borders
   page.drawRectangle({
     x: tableStartX,
-    y: headerY - rowHeight,
+    y: headerY - baseRowHeight,
     width: col1Width,
-    height: rowHeight,
+    height: baseRowHeight,
     borderColor: secondaryColor,
     borderWidth: 1,
   });
   
   page.drawRectangle({
     x: tableStartX + col1Width,
-    y: headerY - rowHeight,
+    y: headerY - baseRowHeight,
     width: col2Width,
-    height: rowHeight,
+    height: baseRowHeight,
     borderColor: secondaryColor,
     borderWidth: 1,
   });
@@ -631,7 +631,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
   // Header text
   page.drawText(processTextForPDF('Nr. crt.'), {
     x: tableStartX + 10,
-    y: headerY - rowHeight + 8,
+    y: headerY - baseRowHeight + 12,
     size: formatting.fontSize || 12,
     font: boldFont,
     color: textColor,
@@ -639,24 +639,69 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
   
   page.drawText(processTextForPDF('Descriere'), {
     x: tableStartX + col1Width + 10,
-    y: headerY - rowHeight + 8,
+    y: headerY - baseRowHeight + 12,
     size: formatting.fontSize || 12,
     font: boldFont,
     color: textColor,
   });
   
   // Table rows
-  let currentY = headerY - rowHeight;
+  let currentY = headerY - baseRowHeight;
   
   for (const annex of annexes) {
-    currentY -= rowHeight;
+    // Calculate dynamic row height based on content
+    let titleText = annex.title;
+    const maxTitleWidth = col2Width - 20;
+    const titleSize = formatting.fontSize || 12;
+    const lineHeight = titleSize * 1.2;
+    
+    // Calculate maximum characters that fit in the column width
+    const maxCharacterLength = Math.floor(maxTitleWidth / (titleSize * 0.6));
+    
+    // If text is too long, wrap it properly instead of truncating
+    let lines = [];
+    if (titleText.length > maxCharacterLength) {
+      // Split into words and wrap
+      const words = titleText.split(' ');
+      let currentLine = '';
+      
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const testWidth = (font as any).widthOfTextAtSize(testLine, titleSize);
+        
+        if (testWidth <= maxTitleWidth) {
+          currentLine = testLine;
+        } else {
+          if (currentLine) {
+            lines.push(currentLine);
+            currentLine = word;
+          } else {
+            // Single word is too long, truncate it
+            lines.push(word.slice(0, maxCharacterLength - 3) + '...');
+          }
+        }
+      }
+      
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+    } else {
+      lines = [titleText];
+    }
+    
+    // Calculate actual row height needed with symmetric margins
+    const textHeight = lines.length * lineHeight;
+    const topBottomMargin = 24; // 12 points top + 12 points bottom
+    const actualRowHeight = Math.max(baseRowHeight, textHeight + topBottomMargin);
+    
+    currentY -= actualRowHeight;
     
     // Row borders
     page.drawRectangle({
       x: tableStartX,
       y: currentY,
       width: col1Width,
-      height: rowHeight,
+      height: actualRowHeight,
       borderColor: secondaryColor,
       borderWidth: 1,
     });
@@ -665,7 +710,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
       x: tableStartX + col1Width,
       y: currentY,
       width: col2Width,
-      height: rowHeight,
+      height: actualRowHeight,
       borderColor: secondaryColor,
       borderWidth: 1,
     });
@@ -675,32 +720,30 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
     const processedNumberText = processTextForPDF(numberText);
     page.drawText(processedNumberText, {
       x: tableStartX + 10,
-      y: currentY + 8,
+      y: currentY + actualRowHeight - 12,
       size: formatting.fontSize || 12,
       font: font,
       color: textColor,
     });
     
-    // Truncate only very long titles (5x column width)
-    let titleText = annex.title;
-    const maxTitleWidth = col2Width - 20;
-    const titleSize = formatting.fontSize || 12;
+    // Handle multi-line text
+    const processedTitleText = processTextForPDF(lines.join('\n'));
+    const processedLines = processedTitleText.split('\n');
+    // Start text from the top of the cell with symmetric margins
+    let textY = currentY + actualRowHeight - 12;
     
-    // Only truncate if text is longer than 5 times the column width
-    const maxCharacterLength = Math.floor(maxTitleWidth / (titleSize * 0.6)) * 5; // Rough estimate: 5x column width
-    
-    if (titleText.length > maxCharacterLength) {
-      titleText = titleText.slice(0, maxCharacterLength - 3) + '...';
+    for (let i = 0; i < processedLines.length; i++) {
+      const line = processedLines[i];
+      if (line.trim()) {
+        page.drawText(line, {
+          x: tableStartX + col1Width + 10,
+          y: textY - (i * lineHeight),
+          size: titleSize,
+          font: font,
+          color: textColor,
+        });
+      }
     }
-    
-    const processedTitleText = processTextForPDF(titleText);
-    page.drawText(processedTitleText, {
-      x: tableStartX + col1Width + 10,
-      y: currentY + 8,
-      size: titleSize,
-      font: font,
-      color: textColor,
-    });
   }
   
   return await pdfDoc.save();

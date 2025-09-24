@@ -1,13 +1,18 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { GridFour, ListNumbers, Eye, EyeSlash } from '@phosphor-icons/react';
 import { AnnexItem, FormattingOptions } from '@/types';
 import { getDisplayTitle } from '@/lib/utils';
+import { VirtualOpisPreview } from '@/components/VirtualOpisPreview';
 
 interface PreviewPanelProps {
   selectedAnnex: AnnexItem | null;
   annexes: AnnexItem[];
   opisFormatting: FormattingOptions;
   coverFormatting: FormattingOptions;
+  onAnnexSelect?: (annex: AnnexItem) => void;
 }
 
 export const PreviewPanel: React.FC<PreviewPanelProps> = ({
@@ -15,8 +20,10 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
   annexes,
   opisFormatting,
   coverFormatting,
+  onAnnexSelect,
 }) => {
   const [logoUrl, setLogoUrl] = React.useState<string | null>(null);
+  const [useVirtualScroll, setUseVirtualScroll] = React.useState(false);
 
   // Properly manage logo URL lifecycle
   React.useEffect(() => {
@@ -166,7 +173,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
     return (
       <div className="border rounded-lg p-6 shadow-sm" style={containerStyle}>
         <div className="text-center text-xl font-bold mb-6" style={titleStyle}>
-          OPIS
+          LISTA ANEXELOR
         </div>
         <table className="w-full border-collapse">
           <thead>
@@ -199,21 +206,23 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
           </thead>
           <tbody>
             {annexes.map((annex) => (
-              <tr key={annex.id}>
+              <tr key={annex.id} className="align-top">
                 <td 
-                  className="border p-2 text-center w-[30%]"
+                  className="border p-2 text-center w-[30%] align-top"
                   style={{ 
                     fontFamily: opisFormatting.fontFamily,
                     fontSize: `${opisFormatting.fontSize}px`,
                     fontWeight: opisFormatting.bold ? 'bold' : 'normal',
                     borderColor: borderColor,
                     color: theme?.text || '#1a1a1a',
+                    verticalAlign: 'top',
+                    minHeight: '40px',
                   }}
                 >
                   Anexa nr. {annex.annexNumber}
                 </td>
                 <td 
-                  className="border p-2"
+                  className="border p-2 align-top"
                   style={{ 
                     fontFamily: opisFormatting.fontFamily,
                     fontSize: `${opisFormatting.fontSize}px`,
@@ -221,6 +230,14 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
                     textAlign: opisFormatting.alignment,
                     borderColor: borderColor,
                     color: theme?.text || '#1a1a1a',
+                    wordWrap: 'break-word',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                    maxWidth: '70%',
+                    whiteSpace: 'normal',
+                    verticalAlign: 'top',
+                    minHeight: '40px',
+                    lineHeight: '1.4',
                   }}
                 >
                   {getDisplayTitle(annex)}
@@ -248,14 +265,38 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Previzualizare Opis</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">Previzualizare Lista Anexelor</CardTitle>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={useVirtualScroll ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setUseVirtualScroll(!useVirtualScroll)}
+              >
+                {useVirtualScroll ? <EyeSlash className="w-4 h-4 mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
+                {useVirtualScroll ? 'Dezactivează' : 'Activează'} Virtual Scroll
+              </Button>
+              <div className="text-xs text-muted-foreground">
+                {annexes.length} anexe
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {annexes.length > 0 ? (
-            renderOpisPreview()
+            useVirtualScroll ? (
+              <VirtualOpisPreview
+                annexes={annexes}
+                opisFormatting={opisFormatting}
+                onAnnexSelect={onAnnexSelect}
+                selectedAnnexId={selectedAnnex?.id}
+              />
+            ) : (
+              renderOpisPreview()
+            )
           ) : (
             <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center text-muted-foreground">
-              Adăugați documente pentru a vizualiza Opis-ul
+              Adăugați documente pentru a vizualiza Lista Anexelor
             </div>
           )}
         </CardContent>

@@ -2,9 +2,10 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { FileText, Plus, X, Upload } from '@phosphor-icons/react';
+import { FileText, Plus, X, Upload, Eye } from '@phosphor-icons/react';
 import { AnnexItem, DocumentItem } from '@/types';
 import { formatBytes, truncateFilePath } from '@/lib/utils';
+import { PDFPreview } from '@/components/PDFPreview';
 
 interface DocumentManagerProps {
   annex: AnnexItem;
@@ -18,6 +19,8 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
   onRemoveDocument,
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [previewDocument, setPreviewDocument] = React.useState<DocumentItem | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -63,6 +66,16 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
     pdfFiles.forEach(file => {
       onAddDocument(annex.id, file);
     });
+  };
+
+  const handlePreviewDocument = (document: DocumentItem) => {
+    setPreviewDocument(document);
+    setIsPreviewOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+    setPreviewDocument(null);
   };
 
   return (
@@ -115,14 +128,28 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
                   #{index + 1}
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onRemoveDocument(annex.id, document.id)}
-                className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-              >
-                <X className="w-3 h-3" />
-              </Button>
+              <div className="flex items-center gap-1">
+                {document.file && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handlePreviewDocument(document)}
+                    className="h-6 w-6 p-0 text-primary hover:text-primary hover:bg-primary/10"
+                    title="Previzualizează PDF-ul"
+                  >
+                    <Eye className="w-3 h-3" />
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onRemoveDocument(annex.id, document.id)}
+                  className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  title="Elimină documentul"
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
             </div>
             {index < (annex.documents || []).length - 1 && (
               <Separator className="my-1" />
@@ -156,6 +183,13 @@ export const DocumentManager: React.FC<DocumentManagerProps> = ({
           </div>
         )}
       </CardContent>
+      
+      {/* PDF Preview Dialog */}
+      <PDFPreview
+        document={previewDocument}
+        isOpen={isPreviewOpen}
+        onClose={handleClosePreview}
+      />
     </Card>
   );
 };

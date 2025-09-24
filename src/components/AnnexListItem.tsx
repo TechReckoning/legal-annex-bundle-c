@@ -2,9 +2,10 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, DotsSixVertical, X, PencilSimple } from '@phosphor-icons/react';
+import { FileText, DotsSixVertical, X, PencilSimple, Eye } from '@phosphor-icons/react';
 import { AnnexItem } from '@/types';
 import { getDisplayTitle, formatBytes, truncateFilePath } from '@/lib/utils';
+import { PDFPreview } from '@/components/PDFPreview';
 
 interface AnnexListItemProps {
   annex: AnnexItem;
@@ -28,6 +29,8 @@ export const AnnexListItem: React.FC<AnnexListItemProps> = ({
 }) => {
   const [isEditing, setIsEditing] = React.useState(false);
   const [editTitle, setEditTitle] = React.useState(getDisplayTitle(annex));
+  const [previewDocument, setPreviewDocument] = React.useState(annex.documents?.[0] || null);
+  const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
 
   const handleTitleSubmit = () => {
     onUpdateTitle(annex.id, editTitle.trim());
@@ -41,6 +44,19 @@ export const AnnexListItem: React.FC<AnnexListItemProps> = ({
       setEditTitle(getDisplayTitle(annex));
       setIsEditing(false);
     }
+  };
+
+  const handlePreviewFirstDocument = () => {
+    const firstDocument = annex.documents?.[0];
+    if (firstDocument) {
+      setPreviewDocument(firstDocument);
+      setIsPreviewOpen(true);
+    }
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+    setPreviewDocument(null);
   };
 
   return (
@@ -108,6 +124,20 @@ export const AnnexListItem: React.FC<AnnexListItemProps> = ({
                     {truncateFilePath(annex.documents[0].sourceFilePath, 25)}
                     {annex.documents[0].file && ` • ${formatBytes(annex.documents[0].file.size)}`}
                   </span>
+                  {annex.documents[0].file && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePreviewFirstDocument();
+                      }}
+                      className="h-5 w-5 p-0 text-primary hover:text-primary hover:bg-primary/10 ml-1"
+                      title="Previzualizează PDF-ul"
+                    >
+                      <Eye className="w-3 h-3" />
+                    </Button>
+                  )}
                 </div>
               ) : annex.documents && annex.documents.length > 1 ? (
                 <div>
@@ -181,6 +211,13 @@ export const AnnexListItem: React.FC<AnnexListItemProps> = ({
           </div>
         </div>
       </CardContent>
+      
+      {/* PDF Preview Dialog */}
+      <PDFPreview
+        document={previewDocument}
+        isOpen={isPreviewOpen}
+        onClose={handleClosePreview}
+      />
     </Card>
   );
 };
