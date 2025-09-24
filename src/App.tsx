@@ -553,7 +553,7 @@ function App(): React.ReactElement {
                     annexes={safeAnnexes}
                     opisFormatting={safeOpisFormatting}
                     coverFormatting={safeCoverFormatting}
-                    onAnnexSelect={setSelectedAnnexId}
+                    onAnnexSelect={(annex) => setSelectedAnnexId(annex.id)}
                   />
                   
                   {selectedAnnex && (
