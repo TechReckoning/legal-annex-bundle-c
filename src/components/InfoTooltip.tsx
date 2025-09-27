@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Info, Files, FileText, Download, HardDrive } from '@phosphor-icons/react';
+import { Info, Files, FileText, Download, HardDrive, TextAa } from '@phosphor-icons/react';
+import { getDiacriticsSupportMessage } from '@/lib/unicode-utils';
 
 export const MultiDocumentInfo: React.FC = () => {
   return (
@@ -28,6 +29,10 @@ export const MultiDocumentInfo: React.FC = () => {
               <div className="flex items-center gap-2">
                 <HardDrive className="w-3 h-3" />
                 <span>PDF-urile sunt stocate temporar în browser până la export (nu pe disc)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TextAa className="w-3 h-3" />
+                <span>{getDiacriticsSupportMessage()}</span>
               </div>
             </div>
           </div>

@@ -162,7 +162,7 @@ export const generateOpisHTML = (config: OpisTableConfig): string => {
   const tableRows = annexes.map(annex => `
     <tr>
       <td class="number-cell">Anexa nr. ${annex.number}</td>
-      <td class="description-cell">${annex.title}</td>
+      <td class="description-cell">${processTextForPDF(annex.title)}</td>
     </tr>
   `).join('');
   
@@ -347,6 +347,7 @@ const createCoverPagePDF = async (config: CoverPageConfig): Promise<Uint8Array> 
 
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([595.28, 841.89]); // A4 in points
+  // Use Helvetica font (TimesRoman has encoding issues with Romanian characters in pdf-lib)
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   
@@ -541,6 +542,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
 
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([595.28, 841.89]); // A4 in points
+  // Use Helvetica font (TimesRoman has encoding issues with Romanian characters in pdf-lib)
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   
@@ -650,7 +652,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
   
   for (const annex of annexes) {
     // Calculate dynamic row height based on content
-    let titleText = annex.title;
+    let titleText = processTextForPDF(annex.title);
     const maxTitleWidth = col2Width - 20;
     const titleSize = formatting.fontSize || 12;
     const lineHeight = titleSize * 1.2;
@@ -666,7 +668,8 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
       let currentLine = '';
       
       for (const word of words) {
-        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const processedWord = processTextForPDF(word);
+        const testLine = currentLine ? `${currentLine} ${processedWord}` : processedWord;
         const testWidth = (font as any).widthOfTextAtSize(testLine, titleSize);
         
         if (testWidth <= maxTitleWidth) {
@@ -674,10 +677,10 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
         } else {
           if (currentLine) {
             lines.push(currentLine);
-            currentLine = word;
+            currentLine = processedWord;
           } else {
             // Single word is too long, truncate it
-            lines.push(word.slice(0, maxCharacterLength - 3) + '...');
+            lines.push(processedWord.slice(0, maxCharacterLength - 3) + '...');
           }
         }
       }
@@ -686,7 +689,7 @@ const createOpisPDF = async (config: OpisTableConfig): Promise<Uint8Array> => {
         lines.push(currentLine);
       }
     } else {
-      lines = [titleText];
+      lines = [titleText]; // titleText is already processed above
     }
     
     // Calculate actual row height needed with symmetric margins
@@ -785,7 +788,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
     const opisConfig: OpisTableConfig = {
       annexes: annexesWithDocuments.map(annex => ({
         number: annex.annexNumber,
-        title: getDisplayTitle(annex)
+        title: processTextForPDF(getDisplayTitle(annex))
       })),
       formatting: opisFormatting
     };
@@ -811,7 +814,7 @@ export const exportToPDF = async (config: PDFExportConfig): Promise<void> => {
         // Generate and add cover page
         const coverConfig: CoverPageConfig = {
           annexNumber: annex.annexNumber,
-          title: getDisplayTitle(annex),
+          title: processTextForPDF(getDisplayTitle(annex)),
           formatting: coverFormatting
         };
         

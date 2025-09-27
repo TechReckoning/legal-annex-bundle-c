@@ -415,20 +415,7 @@ function App(): React.ReactElement {
       <div className="min-h-screen bg-background">
         <header className="border-b bg-card">
           <div className="container mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <img 
-                  src={caselibLogo} 
-                  alt="Caselib Logo" 
-                  className="h-12 w-auto"
-                />
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground">Caselib Bundle</h1>
-                  <p className="text-sm text-muted-foreground">
-                    Anexe pregătite profesionist și eficient - Organizați multiple documente PDF în anexe structurate
-                  </p>
-                </div>
-              </div>
+            <div className="flex items-center justify-end">
               <div className="flex items-center gap-2">
                 <Button variant="outline" onClick={handleSaveProject}>
                   <FloppyDisk className="w-4 h-4 mr-2" />

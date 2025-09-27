@@ -335,6 +335,12 @@ export const FormattingPanel: React.FC<FormattingPanelProps> = ({
       />
 
       <ColorThemeSelector
+        formatting={opisFormatting}
+        onFormattingChange={updateOpisFormatting}
+        title="Temă de culori pentru Lista Anexelor"
+      />
+
+      <ColorThemeSelector
         formatting={coverFormatting}
         onFormattingChange={updateCoverFormatting}
         title="Temă de culori pentru copertă"
