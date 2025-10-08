@@ -1,0 +1,230 @@
+@import 'tailwindcss';
+
+@import './styles/theme.css';
+@import './index.css';
+@import "tw-animate-css";
+/*
+  ---break---
+*/
+@custom-variant dark (&:is(.dark *));
+
+@config '../tailwind.config.js';
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+/*
+  ---break---
+*/
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+/*
+  ---break---
+*/
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+/*
+  ---break---
+*/
+@theme inline {
+  --spacing: {
+    px: 1px;
+    0: 0px;
+    0.5: 0.125rem;
+    1: 0.25rem;
+    1.5: 0.375rem;
+    2: 0.5rem;
+    2.5: 0.625rem;
+    3: 0.75rem;
+    3.5: 0.875rem;
+    4: 1rem;
+    5: 1.25rem;
+    6: 1.5rem;
+    7: 1.75rem;
+    8: 2rem;
+    9: 2.25rem;
+    10: 2.5rem;
+    11: 2.75rem;
+    12: 3rem;
+    14: 3.5rem;
+    16: 4rem;
+    20: 5rem;
+    24: 6rem;
+    28: 7rem;
+    32: 8rem;
+    36: 9rem;
+    40: 10rem;
+    44: 11rem;
+    48: 12rem;
+    52: 13rem;
+    56: 14rem;
+    60: 15rem;
+    64: 16rem;
+    72: 18rem;
+    80: 20rem;
+    96: 24rem;
+  };
+  --radius: {
+    sm: calc(var(--radius) - 4px);
+    md: calc(var(--radius) - 2px);
+    lg: var(--radius);
+    xl: calc(var(--radius) + 4px);
+    "2xl": calc(var(--radius) + 6px);
+    full: 9999px;
+  };
+  --color: {
+    background: var(--background);
+    foreground: var(--foreground);
+    card: var(--card);
+    "card-foreground": var(--card-foreground);
+    popover: var(--popover);
+    "popover-foreground": var(--popover-foreground);
+    primary: var(--primary);
+    "primary-foreground": var(--primary-foreground);
+    secondary: var(--secondary);
+    "secondary-foreground": var(--secondary-foreground);
+    muted: var(--muted);
+    "muted-foreground": var(--muted-foreground);
+    accent: var(--accent);
+    "accent-foreground": var(--accent-foreground);
+    destructive: var(--destructive);
+    border: var(--border);
+    input: var(--input);
+    ring: var(--ring);
+    "chart-1": var(--chart-1);
+    "chart-2": var(--chart-2);
+    "chart-3": var(--chart-3);
+    "chart-4": var(--chart-4);
+    "chart-5": var(--chart-5);
+    sidebar: var(--sidebar);
+    "sidebar-foreground": var(--sidebar-foreground);
+    "sidebar-primary": var(--sidebar-primary);
+    "sidebar-primary-foreground": var(--sidebar-primary-foreground);
+    "sidebar-accent": var(--sidebar-accent);
+    "sidebar-accent-foreground": var(--sidebar-accent-foreground);
+    "sidebar-border": var(--sidebar-border);
+    "sidebar-ring": var(--sidebar-ring);
+  };
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  /*
+  ---break---
+*/
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  /*
+  ---break---
+*/
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
+}
+
+/*
+  ---break---
+*/
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
